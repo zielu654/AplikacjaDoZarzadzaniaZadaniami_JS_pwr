@@ -3,7 +3,7 @@ from typing import Optional, Dict
 
 from sqlalchemy.orm import Session
 
-from Controllers.event_query import EventQuery
+from Database.event_query import EventQuery
 from Controllers.exceptions import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError
 from DTO.event_DTO import EventDTO
 from Database.interfaces import IEventRepository, ICategoryRepository, ISyncMediator
@@ -13,12 +13,10 @@ from Models.event import EventSource, Event
 class EventController:
     def __init__(
         self,
-        session: Session,
         event_repo: IEventRepository,
         category_repo: ICategoryRepository,
         sync_mediator: ISyncMediator
     ):
-        self._session = session
         self._event_repo = event_repo
         self._category_repo = category_repo
         self._sync_mediator = sync_mediator
@@ -68,7 +66,7 @@ class EventController:
 
     def build_query(self) -> EventQuery:
         """Punkt wejścia dla frontendu do budowania filtrów"""
-        return EventQuery(self._session)
+        return self._event_repo.query()
 
     def get_event_by_id(self, event_id: int) -> Optional[EventDTO]:
         """Pobiera pojedyncze zadanie po jego ID (np. do wypełnienia formularza edycji)."""

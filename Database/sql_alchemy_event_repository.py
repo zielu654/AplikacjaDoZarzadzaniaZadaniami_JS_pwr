@@ -3,6 +3,7 @@ from typing import List
 
 from sqlalchemy import func
 
+from Database.event_query import EventQuery
 from Models.sync_metadata import SyncMetadata
 from Database.interfaces import IEventRepository
 from Models.event import Event
@@ -56,3 +57,8 @@ class SqlAlchemyEventRepository(IEventRepository):
         return self.session.query(Event).filter(
             Event.updated_at > syncDate
         ).all()
+
+    @db_error_handler
+    def query(self) -> EventQuery:
+        """Zwraca gotowy do filtrowania obiekt EventQuery używając sesji repozytorium"""
+        return EventQuery(self.session)

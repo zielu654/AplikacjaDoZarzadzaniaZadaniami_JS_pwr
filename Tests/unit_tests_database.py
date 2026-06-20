@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from Models.sync_metadata import SyncMetadata
 from Database.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from Models.database import Base
+from Models.base import Base
 from Models.event import Event
 from Database.exceptions import RecordNotFoundError
 
@@ -122,14 +122,16 @@ def test_get_dirty_records_returns_only_modified_after_sync(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
     sync_date = datetime.now() - timedelta(days=2)
-    old_event = Event(title="Stary", is_deleted=False, updated_at=sync_date - timedelta(days=1))
+    old_event = Event(title="Stary", is_deleted=False)
     repo.add(old_event)
+    old_event.updated_at = sync_date - timedelta(days=1)
+    db_session.commit()
 
     sync_meta = SyncMetadata(old_event.id, last_synced=sync_date)
     db_session.add(sync_meta)
     db_session.commit()
 
-    new_event = Event(title="Nowy", is_deleted=False, updated_at=sync_date + timedelta(days=1))
+    new_event = Event(title="Nowy", is_deleted=False)
 
     repo.add(new_event)
 

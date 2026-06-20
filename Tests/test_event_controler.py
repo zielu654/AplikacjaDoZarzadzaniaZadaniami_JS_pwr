@@ -30,7 +30,7 @@ def run_tests():
     event_repo = SqlAlchemyEventRepository(session)
     category_repo = SqlAlchemyCategoryRepository(session)
 
-    controller = EventController(session, event_repo, category_repo, sync_mediator=None)
+    controller = EventController(event_repo, category_repo, sync_mediator=None)
 
     now = datetime.now()
 
