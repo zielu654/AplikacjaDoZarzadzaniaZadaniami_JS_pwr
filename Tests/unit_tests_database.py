@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from Models.SyncMetadata import SyncMetadata
-from Database.SqlAlchemyEventRepository import SqlAlchemyEventRepository
+from Models.sync_metadata import SyncMetadata
+from Database.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from database import Base
-from Models.Event import Event
+from Models.event import Event
 from Database.exceptions import RecordNotFoundError
 
 

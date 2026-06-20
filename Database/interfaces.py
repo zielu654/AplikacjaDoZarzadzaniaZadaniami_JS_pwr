@@ -1,7 +1,7 @@
 from typing import Protocol, List
 
-from Models.Category import Category
-from Models.Event import Event
+from Models.category import Category
+from Models.event import Event
 
 
 class IEventRepository(Protocol):

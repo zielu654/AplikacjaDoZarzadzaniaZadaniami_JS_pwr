@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Optional, Dict
 
-from Controllers.EventQuery import EventQuery
-from DTO.EventDTO import EventDTO
-from Models.Event import EventSource, Event
+from Controllers.event_query import EventQuery
+from DTO.event_DTO import EventDTO
+from Models.event import EventSource, Event
 
 
 class EventController:

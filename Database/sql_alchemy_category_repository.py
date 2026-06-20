@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List
 
-from Models.Category import Category
-from Database.Interfaces import ICategoryRepository
+from Models.category import Category
+from Database.interfaces import ICategoryRepository
 from Database.exceptions import RecordAlreadyExistsError, db_error_handler, RecordNotFoundError
 
 

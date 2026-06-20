@@ -1,0 +1,84 @@
+from typing import List
+from datetime import datetime, date, time
+from sqlalchemy.orm import Session
+
+from DTO.category_DTO import CategoryDTO
+from DTO.event_DTO import EventDTO
+from Models.event import Event
+
+
+class EventQuery:
+    def __init__(self, session: Session):
+        self._session = session
+        self._query = self._session.query(Event).filter(Event.is_deleted == False)
+
+    def overdue(self) -> 'EventQuery':
+        """Filtruje zadania, których termin minął i nie są zrobione"""
+        now = datetime.now()
+        self._query = self._query.filter(
+            Event.end_datetime < now,
+            Event.is_completed == False
+        )
+        return self
+
+    def high_priority(self) -> 'EventQuery':
+        """Filtruje tylko wysoki priorytet"""
+        self._query = self._query.filter(Event.is_high_priority == True)
+        return self
+
+    def low_priority(self) -> 'EventQuery':
+        """Filtruje tylko niski priorytet"""
+        self._query = self._query.filter(Event.is_high_priority == False)
+        return self
+
+    def by_category(self, category_id: int) -> 'EventQuery':
+        """Filtruje po ID kategorii"""
+        self._query = self._query.filter(Event.category_id == category_id)
+        return self
+
+    def for_date(self, target_date: date) -> 'EventQuery':
+        """Filtruje zadania na konkretny dzień (porównując zakres od północy do 23:59)"""
+        start_of_day = datetime.combine(target_date, time.min)
+        end_of_day = datetime.combine(target_date, time.max)
+
+        self._query = self._query.filter(
+            Event.start_datetime.between(start_of_day, end_of_day)
+        )
+        return self
+
+    def sort_by(self, field_name: str, ascending: bool = True) -> 'EventQuery':
+        """Dynamiczne sortowanie po polu"""
+        column = getattr(Event, field_name, None)
+        if column is not None:
+            order_func = column.asc() if ascending else column.desc()
+            self._query = self._query.order_by(order_func)
+        return self
+
+    def get_list(self) -> List[EventDTO]:
+        """Uruchamia zapytanie w bazie, mapuje wyniki i zwraca gotowe DTO"""
+        db_events = self._query.all()
+
+        dtos = []
+        for event in db_events:
+            cat_dto = None
+            if event.category:
+                cat_dto = CategoryDTO(
+                    id=event.category.id,
+                    name=event.category.name,
+                    color_hex=event.category.color.hex_code,
+                    color_name=event.category.color.display_name,
+                    sync_enabled=event.category.sync_enabled
+                )
+
+            dtos.append(EventDTO(
+                id=event.id,
+                title=event.title,
+                description=event.description,
+                start_datetime=event.start_datetime,
+                end_datetime=event.end_datetime,
+                is_high_priority=event.is_high_priority,
+                is_completed=event.is_completed,
+                category=cat_dto
+            ))
+
+        return dtos

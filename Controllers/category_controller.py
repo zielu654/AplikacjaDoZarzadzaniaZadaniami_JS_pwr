@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from DTO.CategoryDTO import CategoryDTO
+from DTO.category_DTO import CategoryDTO
 
 
 class CategoryController:
