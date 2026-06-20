@@ -23,7 +23,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
             existing_category.is_deleted = False
             existing_category.updated_at = datetime.now()
             existing_category.color = category.color
-            existing_category.is_synced = category.is_synced
+            existing_category.sync_enabled = category.sync_enabled
             self.session.commit()
             return existing_category.id
 

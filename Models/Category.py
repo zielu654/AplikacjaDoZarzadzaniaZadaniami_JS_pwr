@@ -36,6 +36,6 @@ class Category(Base):
     id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, init=False, default=None)
     name: Mapped[str] = mapped_column(unique=True)
     color: Mapped[CalendarColor] = mapped_column(default=CalendarColor.DEFAULT)
-    is_synced: Mapped[bool] = mapped_column(default=True)
+    sync_enabled: Mapped[bool] = mapped_column(default=True)
     is_deleted: Mapped[bool] = mapped_column(default=False)
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
