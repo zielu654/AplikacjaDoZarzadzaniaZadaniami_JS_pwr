@@ -2,6 +2,8 @@ from typing import List
 from datetime import datetime, date
 from sqlalchemy import select, and_, desc, asc
 from sqlalchemy.orm import Session
+
+from DTO.EventDTO import EventDTO
 from Models.Event import Event
 
 class EventQuery:
@@ -48,7 +50,7 @@ class EventQuery:
             self._query = self._query.order_by(order_func)
         return self
 
-    def get_list(self) -> List[Event]:
+    def get_list(self) -> List[EventDTO]:
         """Uruchamia zapytanie w bazie i zwraca gotowe obiekty"""
         result = self._session.scalars(self._query)
         return list(result.all())

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, Dict
 
 from Controllers.EventQuery import EventQuery
+from DTO.EventDTO import EventDTO
 from Models.Event import EventSource, Event
 
 
@@ -39,7 +40,7 @@ class EventController:
         session = self._session_factory()
         return EventQuery(session)
 
-    def get_event_by_id(self, event_id: int) -> Optional[Event]:
+    def get_event_by_id(self, event_id: int) -> Optional[EventDTO]:
         """Pobiera pojedyncze zadanie po jego ID (np. do wypełnienia formularza edycji)."""
         return self._event_repo.get_by_id(event_id)
 

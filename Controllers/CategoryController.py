@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from Models.Category import Category
+from DTO.CategoryDTO import CategoryDTO
 
 
 class CategoryController:
@@ -25,10 +25,10 @@ class CategoryController:
         """
         pass
 
-    def get_all_categories(self) -> List[Category]:
+    def get_all_categories(self) -> List[CategoryDTO]:
         """Pobiera wszystkie kategorie (np. do wypełnienia rozwijanej listy / ComboBox w GUI)"""
         pass
 
-    def get_category_by_id(self, category_id: int) -> Optional[Category]:
+    def get_category_by_id(self, category_id: int) -> Optional[CategoryDTO]:
         """Pobiera szczegóły jednej kategorii (np. żeby wyciągnąć jej kolor w GUI)"""
         pass
