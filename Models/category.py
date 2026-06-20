@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from Models.base import Base
 
 class CalendarColor(Enum):
     LAVENDER = ("1", "#7986cb", "Lawenda")

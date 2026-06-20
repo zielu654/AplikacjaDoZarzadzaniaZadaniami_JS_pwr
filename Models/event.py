@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from Models.base import Base
 
 class EventSource(Enum):
     LOCAL = "local"

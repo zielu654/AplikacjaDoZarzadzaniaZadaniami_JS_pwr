@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from Models.sync_metadata import SyncMetadata
 from Database.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from database import Base
+from Models.database import Base
 from Models.event import Event
 from Database.exceptions import RecordNotFoundError
 

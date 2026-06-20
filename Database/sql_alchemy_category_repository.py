@@ -38,9 +38,9 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
         existing_category = self.session.get(Category, category.id)
 
         if not existing_category:
-            raise RecordNotFoundError(f"Nie można zaktualizować. Wydarzenie {category.name} nie istnieje.")
+            raise RecordNotFoundError(f"Nie można zaktualizować. Kategoria {category.name} nie istnieje.")
         if existing_category.is_deleted:
-            raise RecordNotFoundError(f"Wydarzenie o ID {category.id} zostało usunięte i nie można go edytować.")
+            raise RecordNotFoundError(f"Kategoria o ID {category.id} zostało usunięte i nie można go edytować.")
 
         category.updated_at = datetime.now()
         self.session.merge(category)
@@ -50,7 +50,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
     def delete(self, category_id: int) -> None:
         category = self.session.get(Category, category_id)
         if not category or category.is_deleted:
-            raise RecordNotFoundError(f"Event o ID {category_id} nie istnieje!")
+            raise RecordNotFoundError(f"Kategoria o ID {category_id} nie istnieje!")
 
         category.updated_at = datetime.now()
         category.is_deleted = True

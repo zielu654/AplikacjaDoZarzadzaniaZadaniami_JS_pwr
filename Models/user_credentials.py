@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from Models.base import Base
 
 class UserCredentials(Base):
     __tablename__ = "user_credentials"

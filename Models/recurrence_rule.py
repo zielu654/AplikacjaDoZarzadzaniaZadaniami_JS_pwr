@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from Models.base import Base
 
 class RecurrenceRule(Base):
     __tablename__ = "recurrence_rules"

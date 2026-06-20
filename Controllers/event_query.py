@@ -61,7 +61,7 @@ class EventQuery:
         dtos = []
         for event in db_events:
             cat_dto = None
-            if event.category:
+            if event.category_id:
                 cat_dto = CategoryDTO(
                     id=event.category.id,
                     name=event.category.name,

@@ -36,7 +36,7 @@ class SqlAlchemyEventRepository(IEventRepository):
     def delete(self, event_id: int) -> None:
         event = self.session.get(Event, event_id)
         if not event or event.is_deleted:
-            raise RecordNotFoundError(f"Event o ID {event_id} nie istnieje!")
+            raise RecordNotFoundError(f"Wygarzenie o ID {event_id} nie istnieje!")
 
         event.is_deleted = True
         event.updated_at = datetime.now()

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from Models.base import Base
 
 class SyncMetadata(Base):
     __tablename__ = "sync_metadata"
