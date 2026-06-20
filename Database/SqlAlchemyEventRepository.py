@@ -1,25 +1,55 @@
+from datetime import datetime
 from typing import List
 
-from Controllers.Interfaces import IEventRepository
+from sqlalchemy import func
+
+from DTO.SyncMetadata import SyncMetadata
+from Database.Interfaces import IEventRepository
 from DTO.Event import Event
+from Database.exceptions import RecordNotFoundError, db_error_handler
+
 
 
 class SqlAlchemyEventRepository(IEventRepository):
     def __init__(self, session):
         self.session = session
 
+    @db_error_handler
     def add(self, event: Event) -> int:
-        return super().add(event)
+        self.session.add(event)
 
+        self.session.commit()
+        return event.id
+
+    @db_error_handler
     def update(self, event: Event) -> None:
-        super().update(event)
+        event.updated_at = datetime.now()
+        self.session.merge(event)
+        self.session.commit()
 
+    @db_error_handler
     def delete(self, event_id: int) -> None:
-        super().delete(event_id)
+        event = self.session.get(Event, event_id)
+        if event:
+            event.is_deleted = True
+            event.updated_at = datetime.now()
+            self.session.commit()
+        else:
+            raise RecordNotFoundError()
 
+    @db_error_handler
     def get_all(self) -> List[Event]:
-        return super().get_all()
+        return self.session.query(Event).filter(Event.is_deleted == False).all()
 
+    @db_error_handler
     def get_dirty_records(self) -> List[Event]:
-        return super().get_dirty_records()
+        """Niezsynchronizowane eventy"""
+        syncDate = self.session.query(func.max(SyncMetadata.last_synced)).scalar()
+        if syncDate is None:
+            return self.session.query(Event).all()
+
+        return self.session.query(Event).filter(
+            Event.updated_at > syncDate
+        ).all()
+
 
