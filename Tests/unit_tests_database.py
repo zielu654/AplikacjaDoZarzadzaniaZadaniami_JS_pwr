@@ -4,10 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from Models.sync_metadata import SyncMetadata
-from Database.sql_alchemy_event_repository import SqlAlchemyEventRepository
+from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from Models.base import Base
 from Models.event import Event
-from Database.exceptions import RecordNotFoundError
+from DatabaseSqlAlchemy.exceptions import RecordNotFoundError
 
 
 @pytest.fixture

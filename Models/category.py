@@ -30,6 +30,32 @@ class CalendarColor(Enum):
     def display_name(self) -> str:
         return self.value[2]
 
+    @staticmethod
+    def color_name_to_callendarColor(color_name: str) -> 'CalendarColor':
+        if not color_name:
+            return CalendarColor.DEFAULT
+
+        search_name = color_name.strip().lower()
+
+        for color in CalendarColor:
+            if color.display_name.lower() == search_name:
+                return color
+
+        return CalendarColor.DEFAULT
+
+    @staticmethod
+    def color_hex_to_callendarColor(color_hex: str) -> 'CalendarColor':
+        if not color_hex:
+            return CalendarColor.DEFAULT
+
+        search_hex = color_hex.strip().lower()
+
+        for color in CalendarColor:
+            if color.hex_code.lower() == search_hex:
+                return color
+
+        return CalendarColor.DEFAULT
+
 class Category(Base):
     __tablename__ = "categories"
 

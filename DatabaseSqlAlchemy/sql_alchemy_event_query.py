@@ -4,15 +4,15 @@ from sqlalchemy.orm import Session
 
 from DTO.category_DTO import CategoryDTO
 from DTO.event_DTO import EventDTO
+from DatabaseSqlAlchemy.interfaces import IEventQuery
 from Models.event import Event
 
-
-class EventQuery:
+class SqlAlchemyEventQuery(IEventQuery):
     def __init__(self, session: Session):
         self._session = session
         self._query = self._session.query(Event).filter(Event.is_deleted == False)
 
-    def overdue(self) -> 'EventQuery':
+    def overdue(self) -> 'SqlAlchemyEventQuery':
         """Filtruje zadania, których termin minął i nie są zrobione"""
         now = datetime.now()
         self._query = self._query.filter(
@@ -21,22 +21,22 @@ class EventQuery:
         )
         return self
 
-    def high_priority(self) -> 'EventQuery':
+    def high_priority(self) -> 'SqlAlchemyEventQuery':
         """Filtruje tylko wysoki priorytet"""
         self._query = self._query.filter(Event.is_high_priority == True)
         return self
 
-    def low_priority(self) -> 'EventQuery':
+    def low_priority(self) -> 'SqlAlchemyEventQuery':
         """Filtruje tylko niski priorytet"""
         self._query = self._query.filter(Event.is_high_priority == False)
         return self
 
-    def by_category(self, category_id: int) -> 'EventQuery':
+    def by_category(self, category_id: int) -> 'SqlAlchemyEventQuery':
         """Filtruje po ID kategorii"""
         self._query = self._query.filter(Event.category_id == category_id)
         return self
 
-    def for_date(self, target_date: date) -> 'EventQuery':
+    def for_date(self, target_date: date) -> 'SqlAlchemyEventQuery':
         """Filtruje zadania na konkretny dzień (porównując zakres od północy do 23:59)"""
         start_of_day = datetime.combine(target_date, time.min)
         end_of_day = datetime.combine(target_date, time.max)
@@ -46,7 +46,7 @@ class EventQuery:
         )
         return self
 
-    def sort_by(self, field_name: str, ascending: bool = True) -> 'EventQuery':
+    def sort_by(self, field_name: str, ascending: bool = True) -> 'SqlAlchemyEventQuery':
         """Dynamiczne sortowanie po polu"""
         column = getattr(Event, field_name, None)
         if column is not None:

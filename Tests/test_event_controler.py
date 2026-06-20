@@ -3,8 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from Models.base import Base
-from Database.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from Database.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
+from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
+from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
 from Controllers.event_controller import EventController
 
 

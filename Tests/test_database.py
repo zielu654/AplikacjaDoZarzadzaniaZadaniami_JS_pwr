@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from Models.database import Base
+from Models.base import Base
 from Models.category import Category
 
 engine = create_engine("sqlite:///:memory:", echo=True)

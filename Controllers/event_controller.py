@@ -3,10 +3,10 @@ from typing import Optional, Dict
 
 from sqlalchemy.orm import Session
 
-from Database.event_query import EventQuery
+from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
 from Controllers.exceptions import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError
 from DTO.event_DTO import EventDTO
-from Database.interfaces import IEventRepository, ICategoryRepository, ISyncMediator
+from DatabaseSqlAlchemy.interfaces import IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery
 from Models.event import EventSource, Event
 
 
@@ -64,7 +64,7 @@ class EventController:
         """Zmienia status wykonania zadania na True"""
         pass
 
-    def build_query(self) -> EventQuery:
+    def build_query(self) -> IEventQuery:
         """Punkt wejścia dla frontendu do budowania filtrów"""
         return self._event_repo.query()
 
