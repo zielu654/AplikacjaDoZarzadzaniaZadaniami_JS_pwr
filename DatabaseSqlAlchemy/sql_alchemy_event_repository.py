@@ -20,7 +20,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         new_event = Event(
             title=event_dto.title,
             description=event_dto.description,
-            category_id=event_dto.category.id if event_dto.category else None,
+            category_id=event_dto.category.id if event_dto.category else getattr(event_dto, 'category_id', None),
             start_datetime=event_dto.start_datetime,
             end_datetime=event_dto.end_datetime,
             is_high_priority=event_dto.is_high_priority,
@@ -47,7 +47,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         existing_event.end_datetime = event_dto.end_datetime
         existing_event.is_high_priority = event_dto.is_high_priority
         existing_event.is_completed = event_dto.is_completed
-        existing_event.category_id = event_dto.category.id if event_dto.category else None
+        existing_event.category_id = event_dto.category.id if event_dto.category else getattr(event_dto, 'category_id', None)
 
         existing_event.updated_at = datetime.now()
         self.session.commit()

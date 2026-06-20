@@ -36,17 +36,18 @@ class EventController:
             if category_id not in active_ids:
                 raise ResourceNotFoundError(f"Wybrana kategoria o ID {category_id} nie istnieje!")
 
-        new_event = Event(
+        new_event = EventDTO(
+            id=0,
             title=title.strip(),
             description=description.strip() if description else None,
-            category_id=category_id,
             start_datetime=start_dt,
             end_datetime=end_dt,
             is_high_priority=priority,
             is_completed=False,
-            source=source
+            category=None
         )
 
+        new_event.category_id = category_id
         return self._event_repo.add(new_event)
 
     def edit_event(self, event_id: int, updates: Dict) -> None:
