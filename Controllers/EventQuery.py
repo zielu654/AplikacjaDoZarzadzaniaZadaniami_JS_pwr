@@ -2,7 +2,7 @@ from typing import List
 from datetime import datetime, date
 from sqlalchemy import select, and_, desc, asc
 from sqlalchemy.orm import Session
-from DTO.Event import Event 
+from Models.Event import Event
 
 class EventQuery:
     def __init__(self, session: Session):

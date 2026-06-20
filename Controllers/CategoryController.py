@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from DTO.Category import Category
+from Models.Category import Category
 
 
 class CategoryController:

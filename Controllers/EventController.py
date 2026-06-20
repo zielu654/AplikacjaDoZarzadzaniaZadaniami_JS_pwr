@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, Dict
 
 from Controllers.EventQuery import EventQuery
-from DTO.Event import EventSource, Event
+from Models.Event import EventSource, Event
 
 
 class EventController:

@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from database import Base
-from DTO.Category import Category
-from DTO.Event import Event
-from DTO.RecurrenceRule import RecurrenceRule
-from DTO.SyncMetadata import SyncMetadata
-from DTO.UserCredentials import UserCredentials
+from Models.Category import Category
+from Models.Event import Event
+from Models.RecurrenceRule import RecurrenceRule
+from Models.SyncMetadata import SyncMetadata
+from Models.UserCredentials import UserCredentials
 
 engine = create_engine("sqlite:///:memory:", echo=True)
 

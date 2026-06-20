@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from DTO.Category import Category
+from Models.Category import Category
 from Database.Interfaces import ICategoryRepository
 from Database.exceptions import RecordAlreadyExistsError, db_error_handler, RecordNotFoundError
 
@@ -23,7 +23,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
             existing_category.is_deleted = False
             existing_category.updated_at = datetime.now()
             existing_category.color = category.color
-            existing_category.is_sync = category.is_sync
+            existing_category.is_synced = category.is_synced
             self.session.commit()
             return existing_category.id
 
@@ -38,7 +38,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
         existing_category = self.session.get(Category, category.id)
 
         if not existing_category:
-            raise RecordNotFoundError(f"Nie można zaktualizować. Wydarzenie {category.title} nie istnieje.")
+            raise RecordNotFoundError(f"Nie można zaktualizować. Wydarzenie {category.name} nie istnieje.")
         if existing_category.is_deleted:
             raise RecordNotFoundError(f"Wydarzenie o ID {category.id} zostało usunięte i nie można go edytować.")
 
@@ -52,6 +52,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
         if not category or category.is_deleted:
             raise RecordNotFoundError(f"Event o ID {category_id} nie istnieje!")
 
+        category.updated_at = datetime.now()
         category.is_deleted = True
         self.session.commit()
 

@@ -3,9 +3,9 @@ from typing import List
 
 from sqlalchemy import func
 
-from DTO.SyncMetadata import SyncMetadata
+from Models.SyncMetadata import SyncMetadata
 from Database.Interfaces import IEventRepository
-from DTO.Event import Event
+from Models.Event import Event
 from Database.exceptions import RecordNotFoundError, db_error_handler
 
 class SqlAlchemyEventRepository(IEventRepository):
