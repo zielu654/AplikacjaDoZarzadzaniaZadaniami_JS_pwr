@@ -8,21 +8,26 @@ from Database.Interfaces import IEventRepository
 from DTO.Event import Event
 from Database.exceptions import RecordNotFoundError, db_error_handler
 
-
-
 class SqlAlchemyEventRepository(IEventRepository):
     def __init__(self, session):
         self.session = session
 
     @db_error_handler
     def add(self, event: Event) -> int:
+        event.updated_at = datetime.now()
         self.session.add(event)
-
         self.session.commit()
         return event.id
 
     @db_error_handler
     def update(self, event: Event) -> None:
+        existing_event = self.session.get(Event, event.id)
+
+        if not existing_event:
+            raise RecordNotFoundError(f"Nie można zaktualizować. Wydarzenie {event.title} nie istnieje.")
+        if existing_event.is_deleted:
+            raise RecordNotFoundError(f"Wydarzenie o ID {event.id} zostało usunięte i nie można go edytować.")
+
         event.updated_at = datetime.now()
         self.session.merge(event)
         self.session.commit()
@@ -30,12 +35,12 @@ class SqlAlchemyEventRepository(IEventRepository):
     @db_error_handler
     def delete(self, event_id: int) -> None:
         event = self.session.get(Event, event_id)
-        if event:
-            event.is_deleted = True
-            event.updated_at = datetime.now()
-            self.session.commit()
-        else:
-            raise RecordNotFoundError()
+        if not event or event.is_deleted:
+            raise RecordNotFoundError(f"Event o ID {event_id} nie istnieje!")
+
+        event.is_deleted = True
+        event.updated_at = datetime.now()
+        self.session.commit()
 
     @db_error_handler
     def get_all(self) -> List[Event]:
@@ -51,5 +56,3 @@ class SqlAlchemyEventRepository(IEventRepository):
         return self.session.query(Event).filter(
             Event.updated_at > syncDate
         ).all()
-
-

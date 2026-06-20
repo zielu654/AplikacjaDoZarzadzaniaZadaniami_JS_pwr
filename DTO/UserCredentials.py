@@ -10,14 +10,3 @@ class UserCredentials(Base):
     token_uri: Mapped[str] = mapped_column(default="")
     client_id: Mapped[str] = mapped_column(default="")
     client_secret: Mapped[str] = mapped_column(default="")
-
-    @classmethod
-    def from_row(cls, row: tuple) -> 'UserCredentials':
-        if not row: return None
-        return cls(
-            id=row[0],
-            refresh_token=row[1],
-            token_uri=row[2],
-            client_id=row[3],
-            client_secret=row[4]
-        )

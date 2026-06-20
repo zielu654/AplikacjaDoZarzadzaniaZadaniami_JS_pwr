@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column
@@ -33,17 +34,8 @@ class Category(Base):
     __tablename__ = "categories"
 
     id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, init=False, default=None)
-    name: Mapped[str] = mapped_column(default="")
+    name: Mapped[str] = mapped_column(unique=True)
     color: Mapped[CalendarColor] = mapped_column(default=CalendarColor.DEFAULT)
     is_synced: Mapped[bool] = mapped_column(default=True)
-
-    @classmethod
-    def from_row(cls, row: tuple) -> 'Category':
-        if not row:
-            return None
-        return cls(
-            id=row[0],
-            name=row[1],
-            color=CalendarColor[row[2]] if row[2] in CalendarColor.__members__ else CalendarColor.DEFAULT,
-            is_synced=bool(row[3])
-        )
+    is_deleted: Mapped[bool] = mapped_column(default=False)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
