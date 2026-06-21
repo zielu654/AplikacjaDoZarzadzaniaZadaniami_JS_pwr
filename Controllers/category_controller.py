@@ -65,13 +65,13 @@ class CategoryController:
         Jeśli cascade=True, oznacza jako usunięte też wszystkie zadania z tej kategorii.
         Jeśli cascade=False, zadania dostają category_id = None.
         """
+
         category = self._category_repo.get_by_id(category_id)
         if not category:
             raise ValueError(f"Kategoria o ID {category_id} nie istnieje!")
 
         if self._event_repo:
             events_in_category = self._event_repo.query().by_category(category_id).get_list()
-            print(f"Znaleziono zadań do usunięcia: {len(events_in_category)}")
             for event in events_in_category:
                 if cascade:
                     self._event_repo.delete(event.id)

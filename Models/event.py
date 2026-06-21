@@ -15,7 +15,7 @@ class Event(Base):
 
     id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, init=False, default=None)
     category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("categories.id"), default=None)
-    category: Mapped[Optional["Category"]] = relationship(default=None)
+    category: Mapped[Optional["Category"]] = relationship(init=False)
     title: Mapped[str] = mapped_column(default="")
     description: Mapped[str] = mapped_column(default="")
     start_datetime: Mapped[Optional[datetime]] = mapped_column(default=None)

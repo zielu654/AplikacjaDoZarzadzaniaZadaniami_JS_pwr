@@ -41,11 +41,10 @@ class EventController:
             end_datetime=end_dt,
             is_high_priority=priority,
             is_completed=False,
-            category=None
+            category=self._category_repo.get_by_id(category_id),
+            source=source
         )
 
-        new_event.category_id = category_id
-        new_event.source = source
         return self._event_repo.add(new_event)
 
     def edit_event(self, event_id: int, updates: Dict) -> None:

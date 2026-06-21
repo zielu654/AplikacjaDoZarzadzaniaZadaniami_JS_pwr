@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from DTO.category_DTO import CategoryDTO
+from Models.event import EventSource
 
 
 @dataclass
@@ -15,3 +16,4 @@ class EventDTO:
     is_completed: bool | None
 
     category: Optional[CategoryDTO] = None
+    source: EventSource = EventSource.LOCAL

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import func
+from unicodedata import category
 
 from DTO.category_DTO import CategoryDTO
 from DTO.event_DTO import EventDTO
@@ -27,14 +28,15 @@ class SqlAlchemyEventRepository(IEventRepository):
             is_completed=event_dto.is_completed,
             is_deleted=False,
             updated_at=datetime.now(),
-            source=getattr(event_dto, 'source', EventSource.LOCAL)
+            created_at=datetime.now(),
+            source=event_dto.source
         )
         self.session.add(new_event)
         self.session.commit()
         return new_event.id
 
     @db_error_handler
-    def update(self, event_dto: Event) -> None:
+    def update(self, event_dto: EventDTO) -> None:
         existing_event = self.session.get(Event, event_dto.id)
 
         if not existing_event:
@@ -58,7 +60,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         event = self.session.get(Event, event_id)
         if not event or event.is_deleted:
             raise RecordNotFoundError(f"Wygarzenie o ID {event_id} nie istnieje!")
-
+        print(f"{self} is deleted")
         event.is_deleted = True
         event.updated_at = datetime.now()
         self.session.commit()
@@ -91,8 +93,6 @@ class SqlAlchemyEventRepository(IEventRepository):
     def query(self) -> SqlAlchemyEventQuery:
         """Zwraca gotowy do filtrowania obiekt EventQuery używając sesji repozytorium"""
         return SqlAlchemyEventQuery(self.session)
-
-
 
     def _map_to_dto(self, event: Event) -> EventDTO:
         """Prywatna metoda pomocnicza, żeby nie powtarzać kodu mapowania"""

@@ -11,7 +11,6 @@ from Controllers.event_controller import EventController
 from Controllers.exceptions import EmptyFieldError, ResourceNotFoundError, InvalidDateRangeError
 
 
-# --- FIXTURE BAZY DANYCH ---
 @pytest.fixture
 def db_session():
     engine = create_engine("sqlite:///:memory:")
@@ -65,7 +64,7 @@ def test_edit_category_updates_fields(controllers):
 def test_delete_category_cascade_false_removes_link(controllers):
     cat_ctrl, event_ctrl = controllers
 
-    cat_id = cat_ctrl.create_category("Tymczasowa", "#123123")
+    cat_id = cat_ctrl.create_category("Tymczasowa", "#7986cb")
     ev_id = event_ctrl.create_new_event("Zadanie powiązane", "Opis", cat_id)
 
     cat_ctrl.delete_category(cat_id, cascade=False)
@@ -78,8 +77,9 @@ def test_delete_category_cascade_false_removes_link(controllers):
 def test_delete_category_cascade_true_deletes_events(controllers):
     cat_ctrl, event_ctrl = controllers
 
-    cat_id = cat_ctrl.create_category("Do skasowania", "#123123")
+    cat_id = cat_ctrl.create_category("Do skasowania", "#7986cb")
     ev_id = event_ctrl.create_new_event("Zadanie usunięte z kategorią", "Opis", cat_id)
+    print(event_ctrl.get_event_by_id(ev_id))
 
     cat_ctrl.delete_category(cat_id, cascade=True)
 
