@@ -1,13 +1,10 @@
 from datetime import datetime
 from typing import Optional, Dict
 
-from sqlalchemy.orm import Session
-
-from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
 from Controllers.exceptions import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError
 from DTO.event_DTO import EventDTO
 from DatabaseSqlAlchemy.interfaces import IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery
-from Models.event import EventSource, Event
+from Models.event import EventSource
 
 
 class EventController:
@@ -32,8 +29,8 @@ class EventController:
             raise InvalidDateRangeError("Data zakończenia nie może być wcześniejsza niż rozpoczęcia!")
 
         if category_id is not None:
-            active_ids = [cat.id for cat in self._category_repo.get_all()]
-            if category_id not in active_ids:
+            cat = self._category_repo.get_by_id(category_id)
+            if not cat:
                 raise ResourceNotFoundError(f"Wybrana kategoria o ID {category_id} nie istnieje!")
 
         new_event = EventDTO(
@@ -48,22 +45,70 @@ class EventController:
         )
 
         new_event.category_id = category_id
+        new_event.source = source
         return self._event_repo.add(new_event)
 
     def edit_event(self, event_id: int, updates: Dict) -> None:
         """
         Aktualizuje wybrane pola zadania.
         'updates' to słownik {'nazwa zmiennej' : 'nowa wartosc'} np. {'title': 'Nowy tytuł', 'priority': 3}
+        zmienne : title; description; priority; is_completed; category_id; start_dt; end_dt
         """
-        pass
+        event = self._event_repo.get_by_id(event_id)
+        if not event:
+            raise ResourceNotFoundError(f"Nie można edytować. Zadanie o ID {event_id} nie istnieje.")
+
+        if 'title' in updates:
+            new_title = updates['title']
+            if not new_title or not str(new_title).strip():
+                raise EmptyFieldError("Tytuł wydarzenia nie może być pusty!")
+            event.title = str(new_title).strip()
+
+        if 'description' in updates:
+            desc = updates['description']
+            event.description = str(desc).strip() if desc else None
+
+        if 'priority' in updates:
+            event.is_high_priority = bool(updates['priority'])
+
+        if 'is_completed' in updates:
+            event.is_completed = bool(updates['is_completed'])
+
+        if 'category_id' in updates:
+            cat_id = updates['category_id']
+            if cat_id is not None:
+                cat = self._category_repo.get_by_id(cat_id)
+                if not cat:
+                    raise ResourceNotFoundError(f"Wybrana kategoria o ID {cat_id} nie istnieje!")
+
+            event.category_id = cat_id
+            event.category = None
+
+        new_start = updates.get('start_dt', event.start_datetime)
+        new_end = updates.get('end_dt', event.end_datetime)
+
+        if new_start and new_end and new_end < new_start:
+            raise InvalidDateRangeError("Data zakończenia nie może być wcześniejsza niż rozpoczęcia!")
+
+        if 'start_dt' in updates:
+            event.start_datetime = updates['start_dt']
+        if 'end_dt' in updates:
+            event.end_datetime = updates['end_dt']
+
+        self._event_repo.update(event)
 
     def delete_event(self, event_id: int) -> None:
         """Oznacza zadanie jako usunięte (Soft Delete: is_deleted = True)"""
-        pass
+        self._event_repo.delete(event_id)
 
     def mark_completed(self, event_id: int) -> None:
         """Zmienia status wykonania zadania na True"""
-        pass
+        event = self._event_repo.get_by_id(event_id)
+        if not event:
+            raise ResourceNotFoundError(f"Nie można oznaczyć. Zadanie o ID {event_id} nie istnieje.")
+
+        event.is_completed = True
+        self._event_repo.update(event)
 
     def build_query(self) -> IEventQuery:
         """Punkt wejścia dla frontendu do budowania filtrów"""

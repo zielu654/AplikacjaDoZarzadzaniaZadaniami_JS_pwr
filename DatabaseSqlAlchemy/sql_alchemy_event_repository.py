@@ -8,7 +8,7 @@ from DTO.event_DTO import EventDTO
 from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
 from Models.sync_metadata import SyncMetadata
 from DatabaseSqlAlchemy.interfaces import IEventRepository
-from Models.event import Event
+from Models.event import Event, EventSource
 from DatabaseSqlAlchemy.exceptions import RecordNotFoundError, db_error_handler
 
 class SqlAlchemyEventRepository(IEventRepository):
@@ -26,7 +26,8 @@ class SqlAlchemyEventRepository(IEventRepository):
             is_high_priority=event_dto.is_high_priority,
             is_completed=event_dto.is_completed,
             is_deleted=False,
-            updated_at=datetime.now()
+            updated_at=datetime.now(),
+            source=getattr(event_dto, 'source', EventSource.LOCAL)
         )
         self.session.add(new_event)
         self.session.commit()

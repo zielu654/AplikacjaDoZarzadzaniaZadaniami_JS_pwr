@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from DTO.event_DTO import EventDTO
 from Models.sync_metadata import SyncMetadata
 from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from Models.base import Base
@@ -23,46 +24,55 @@ def db_session():
 
 def test_add_event_success_returns_id(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    now_time = datetime.now()
-    event = Event(title="Nowe zadanie", is_deleted=False, updated_at=now_time)
 
-    new_id = repo.add(event)
+    dto = EventDTO(id=0, title="Nowe zadanie", description=None, start_datetime=None,
+                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+
+    new_id = repo.add(dto)
 
     assert isinstance(new_id, int)
     assert new_id > 0
-    assert event.id == new_id
 
 
 def test_add_event_saves_to_database(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    event = Event(title="Testowy zapis", is_deleted=False, updated_at=datetime.now())
+    dto = EventDTO(id=0, title="Testowy zapis", description=None, start_datetime=None,
+                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
 
-    repo.add(event)
+    new_id = repo.add(dto)
 
-    saved_event = db_session.get(Event, event.id)
+    saved_event = db_session.get(Event, new_id)
     assert saved_event is not None
     assert saved_event.title == "Testowy zapis"
+    assert saved_event.is_deleted is False
 
 
 def test_update_event_changes_data_and_updated_at(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
+    dto = EventDTO(id=0, title="Stary tytuł", description=None, start_datetime=None,
+                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    event_id = repo.add(dto)
+
     past_time = datetime.now() - timedelta(days=1)
-    event = Event(title="Stary tytuł", is_deleted=False, updated_at=past_time)
-    repo.add(event)
+    db_model = db_session.get(Event, event_id)
+    db_model.updated_at = past_time
+    db_session.commit()
 
-    event.title = "Zaktualizowany tytuł"
-    repo.update(event)
+    event_to_update = repo.get_by_id(event_id)
+    event_to_update.title = "Zaktualizowany tytuł"
+    repo.update(event_to_update)
 
-    updated_event = db_session.get(Event, event.id)
-    assert updated_event.title == "Zaktualizowany tytuł"
-    assert updated_event.updated_at > past_time
+    updated_db_model = db_session.get(Event, event_id)
+    assert updated_db_model.title == "Zaktualizowany tytuł"
+    assert updated_db_model.updated_at > past_time
 
 
 def test_delete_performs_soft_delete(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    event = Event(title="Do usunięcia", is_deleted=False, updated_at=datetime.now())
-    event_id = repo.add(event)
+    dto = EventDTO(id=0, title="Do usunięcia", description=None, start_datetime=None,
+                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    event_id = repo.add(dto)
 
     repo.delete(event_id)
 
@@ -78,16 +88,19 @@ def test_delete_raises_record_not_found(db_session):
         repo.delete(9999)
 
 
-
 def test_get_all_returns_only_active_events(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    event1 = Event(title="Aktywne 1", is_deleted=False, updated_at=datetime.now())
-    event2 = Event(title="Usunięte 1", is_deleted=True, updated_at=datetime.now())
-    event3 = Event(title="Aktywne 2", is_deleted=False, updated_at=datetime.now())
 
-    repo.add(event1)
-    repo.add(event2)
-    repo.add(event3)
+    dto1 = EventDTO(id=0, title="Aktywne 1", description=None, start_datetime=None,
+                    end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto2 = EventDTO(id=0, title="Aktywne 2", description=None, start_datetime=None,
+                    end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    repo.add(dto1)
+    repo.add(dto2)
+
+    deleted_db_event = Event(title="Usunięte 1", is_deleted=True, updated_at=datetime.now())
+    db_session.add(deleted_db_event)
+    db_session.commit()
 
     results = repo.get_all()
 
@@ -108,34 +121,65 @@ def test_get_all_empty_database_returns_empty_list(db_session):
 
 def test_get_dirty_records_without_sync_metadata_returns_all(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    event1 = Event(title="Event 1", is_deleted=False, updated_at=datetime.now())
-    event2 = Event(title="Event 2", is_deleted=True, updated_at=datetime.now())
-    repo.add(event1)
-    repo.add(event2)
+
+    dto = EventDTO(id=0, title="Event 1", description=None, start_datetime=None,
+                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    repo.add(dto)
+
+    deleted_db_event = Event(title="Event 2", is_deleted=True, updated_at=datetime.now())
+    db_session.add(deleted_db_event)
+    db_session.commit()
 
     results = repo.get_dirty_records()
 
     assert len(results) == 2
+    titles = [e.title for e in results]
+    assert "Event 1" in titles
+    assert "Event 2" in titles
 
 
 def test_get_dirty_records_returns_only_modified_after_sync(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
-    sync_date = datetime.now() - timedelta(days=2)
-    old_event = Event(title="Stary", is_deleted=False)
-    repo.add(old_event)
-    old_event.updated_at = sync_date - timedelta(days=1)
+    now = datetime.now()
+    sync_date = now - timedelta(days=2)
+    old_date = sync_date - timedelta(days=1)
+
+    old_event_dto = EventDTO(
+        id=0,
+        title="Stary",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None
+    )
+    old_id = repo.add(old_event_dto)
+
+    old_db_model = db_session.get(Event, old_id)
+    old_db_model.updated_at = old_date
     db_session.commit()
 
-    sync_meta = SyncMetadata(old_event.id, last_synced=sync_date)
+    sync_meta = SyncMetadata(event_id=old_id, last_synced=sync_date)
     db_session.add(sync_meta)
     db_session.commit()
 
-    new_event = Event(title="Nowy", is_deleted=False)
-
-    repo.add(new_event)
+    new_event_dto = EventDTO(
+        id=0,
+        title="Nowy",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None
+    )
+    repo.add(new_event_dto)
 
     results = repo.get_dirty_records()
 
     assert len(results) == 1
     assert results[0].title == "Nowy"
+
+    assert isinstance(results[0], EventDTO)

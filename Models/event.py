@@ -1,7 +1,9 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional
-from sqlalchemy.orm import Mapped, mapped_column
+
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from Models.base import Base
 
 class EventSource(Enum):
@@ -12,7 +14,8 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[Optional[int]] = mapped_column(primary_key=True, autoincrement=True, init=False, default=None)
-    category_id: Mapped[Optional[int]] = mapped_column(default=None)
+    category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("categories.id"), default=None)
+    category: Mapped[Optional["Category"]] = relationship(default=None)
     title: Mapped[str] = mapped_column(default="")
     description: Mapped[str] = mapped_column(default="")
     start_datetime: Mapped[Optional[datetime]] = mapped_column(default=None)
