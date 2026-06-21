@@ -7,6 +7,7 @@ from unicodedata import category
 from DTO.category_DTO import CategoryDTO
 from DTO.event_DTO import EventDTO
 from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
+from Models.category import CalendarColor
 from Models.recurrence_rule import RecurrenceRule
 from Models.sync_metadata import SyncMetadata
 from DatabaseSqlAlchemy.interfaces import IEventRepository
@@ -116,8 +117,7 @@ class SqlAlchemyEventRepository(IEventRepository):
             cat_dto = CategoryDTO(
                 id=event.category.id,
                 name=event.category.name,
-                color_hex=event.category.color.hex_code,
-                color_name=event.category.color.display_name,
+                color=event.category.color,
                 sync_enabled=event.category.sync_enabled
             )
         rrule = event.recurrence_rule.rrule_string if event.recurrence_rule else None

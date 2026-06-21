@@ -65,8 +65,7 @@ class SqlAlchemyEventQuery(IEventQuery):
                 cat_dto = CategoryDTO(
                     id=event.category.id,
                     name=event.category.name,
-                    color_hex=event.category.color.hex_code,
-                    color_name=event.category.color.display_name,
+                    color=event.category.color,
                     sync_enabled=event.category.sync_enabled
                 )
 

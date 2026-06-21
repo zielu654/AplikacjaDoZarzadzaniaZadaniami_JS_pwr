@@ -4,12 +4,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from DTO.event_DTO import EventDTO
+from DTO.user_credentials_DTO import UserCredentialsDTO
+from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
 from Models.sync_metadata import SyncMetadata
 from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from Models.base import Base
 from Models.event import Event
 from Models.category import Category
 from DatabaseSqlAlchemy.exceptions import RecordNotFoundError
+from Models.user_credentials import UserCredentials
 
 
 @pytest.fixture
@@ -184,3 +187,25 @@ def test_get_dirty_records_returns_only_modified_after_sync(db_session):
     assert results[0].title == "Nowy"
 
     assert isinstance(results[0], EventDTO)
+
+def test_save_new_user_credentials_saves_to_db(db_session):
+    repo = SqlAlchemyUserCredentialsRepository(db_session)
+    dto = UserCredentialsDTO(user_id=1, token_data='{"token": "xyz"}')
+
+    repo.save(dto)
+
+    saved = db_session.query(UserCredentials).filter(UserCredentials.user_id == 1).first()
+    assert saved is not None
+    assert saved.token_data == '{"token": "xyz"}'
+
+def test_save_existing_user_credentials_updates_it(db_session):
+    repo = SqlAlchemyUserCredentialsRepository(db_session)
+    dto1 = UserCredentialsDTO(user_id=1, token_data='{"token": "stary"}')
+    repo.save(dto1)
+
+    dto2 = UserCredentialsDTO(user_id=1, token_data='{"token": "nowy"}')
+    repo.save(dto2)
+
+    all_creds = db_session.query(UserCredentials).all()
+    assert len(all_creds) == 1
+    assert all_creds[0].token_data == '{"token": "nowy"}'

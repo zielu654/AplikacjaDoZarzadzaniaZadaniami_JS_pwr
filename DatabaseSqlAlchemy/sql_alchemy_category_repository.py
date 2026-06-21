@@ -17,7 +17,6 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
             Category.name == category_dto.name
         ).first()
 
-        new_color = self._get_color_from_dto(category_dto)
 
         if existing_category:
             if not existing_category.is_deleted:
@@ -25,14 +24,14 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
 
             existing_category.is_deleted = False
             existing_category.updated_at = datetime.now()
-            existing_category.color = new_color
+            existing_category.color = category_dto.color
             existing_category.sync_enabled = category_dto.sync_enabled
             self.session.commit()
             return existing_category.id
 
         new_category = Category(
             name=category_dto.name,
-            color=new_color,
+            color=category_dto.color,
             sync_enabled=category_dto.sync_enabled,
             is_deleted=False,
             updated_at=datetime.now()
@@ -55,7 +54,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
         existing_category.updated_at = datetime.now()
         existing_category.name = category_dto.name
         existing_category.sync_enabled = category_dto.sync_enabled
-        existing_category.color = self._get_color_from_dto(category_dto)
+        existing_category.color = category_dto.color
         self.session.commit()
 
     @db_error_handler
@@ -82,18 +81,11 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
 
         return self._map_to_dto(category)
 
-    def _get_color_from_dto(self, category_dto: CategoryDTO) -> 'CalendarColor':
-        new_color = CalendarColor.color_hex_to_callendarColor(category_dto.color_hex)
-        if not new_color:
-            return CalendarColor.color_name_to_callendarColor(category_dto.color_name)
-
-        return new_color
 
     def _map_to_dto(self, category: Category) -> CategoryDTO:
         return CategoryDTO(
             id=category.id,
             name=category.name,
-            color_hex=category.color.hex_code if category.color else None,
-            color_name=category.color.display_name if category.color else None,
+            color=category.color,
             sync_enabled=category.sync_enabled
         )

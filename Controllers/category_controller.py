@@ -19,8 +19,7 @@ class CategoryController:
         new_category = CategoryDTO(
             id=0,
             name=name.strip(),
-            color_hex=color_hex,
-            color_name=CalendarColor.color_hex_to_callendarColor(color_hex).display_name,
+            color=CalendarColor.color_hex_to_callendarColor(color_hex),
             sync_enabled=is_syncable
         )
         return self._category_repo.add(new_category)
@@ -44,15 +43,13 @@ class CategoryController:
         if 'color_hex' in updates:
             if all(color.hex_code != updates['color_hex'] for color in CalendarColor):
                 raise ValidationError("Niepoprawny kolor!")
-            category.color_hex = updates['color_hex']
-            category.color_name = CalendarColor.color_hex_to_callendarColor(updates['color_hex']).display_name
+            category.color = CalendarColor.color_hex_to_callendarColor(updates['color_hex'])
 
 
         if 'color_name' in updates:
             if all(color.name != updates['color_name'] for color in CalendarColor):
                 raise ValidationError("Niepoprawny kolor!")
-            category.color_name = updates['color_name']
-            category.color_hex = CalendarColor.color_name_to_callendarColor(updates['color_name']).display_name
+            category.color = CalendarColor.color_name_to_callendarColor(updates['color_name'])
 
         if 'is_syncable' in updates:
             category.sync_enabled = bool(updates['is_syncable'])

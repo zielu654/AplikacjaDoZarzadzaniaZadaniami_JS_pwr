@@ -44,7 +44,7 @@ def test_create_category_success(controllers):
     assert cat_id > 0
     saved_cat = cat_ctrl.get_category_by_id(cat_id)
     assert saved_cat.name == "Praca"
-    assert saved_cat.color_hex == "#7986cb"
+    assert saved_cat.color.hex_code == "#7986cb"
 
 
 def test_edit_category_updates_fields(controllers):
@@ -55,7 +55,7 @@ def test_edit_category_updates_fields(controllers):
 
     updated = cat_ctrl.get_category_by_id(cat_id)
     assert updated.name == "Nowa"
-    assert updated.color_hex == "#8e24aa"
+    assert updated.color.hex_code == "#8e24aa"
 
 
 def test_delete_category_cascade_false_removes_link(controllers):
