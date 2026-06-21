@@ -5,6 +5,7 @@ from Controllers.exceptions import ResourceNotFoundError, InvalidDateRangeError,
 from DTO.event_DTO import EventDTO
 from DatabaseSqlAlchemy.interfaces import IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery
 from Models.event import EventSource
+from Models.recurrence_rule import RecurrenceRule
 
 
 class EventController:
@@ -20,7 +21,7 @@ class EventController:
 
     def create_new_event(self, title: str, description: str, category_id: Optional[int],
                          start_dt: Optional[datetime] = None, end_dt: Optional[datetime] = None,
-                         priority: bool = False, source: EventSource = EventSource.LOCAL) -> int:
+                         priority: bool = False, rrule: Optional[str] = None, source: EventSource = EventSource.LOCAL) -> int:
         """Tworzy nowe zadanie, waliduje i zapisuje."""
         if not title or not title.strip():
             raise EmptyFieldError("Tytuł wydarzenia nie może być pusty!")
@@ -42,6 +43,7 @@ class EventController:
             is_high_priority=priority,
             is_completed=False,
             category=self._category_repo.get_by_id(category_id),
+            rrule_str=rrule,
             source=source
         )
 
@@ -51,7 +53,7 @@ class EventController:
         """
         Aktualizuje wybrane pola zadania.
         'updates' to słownik {'nazwa zmiennej' : 'nowa wartosc'} np. {'title': 'Nowy tytuł', 'priority': 3}
-        zmienne : title; description; priority; is_completed; category_id; start_dt; end_dt
+        zmienne : title; description; priority; is_completed; category_id; start_dt; end_dt; rrule_string
         """
         event = self._event_repo.get_by_id(event_id)
         if not event:
@@ -93,6 +95,9 @@ class EventController:
             event.start_datetime = updates['start_dt']
         if 'end_dt' in updates:
             event.end_datetime = updates['end_dt']
+
+        if 'rrule_string' in updates:
+            event.rrule_str = updates['rrule_string']
 
         self._event_repo.update(event)
 

@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from Models.base import Base
+
+if TYPE_CHECKING:
+    from Models.recurrence_rule import RecurrenceRule
 
 class EventSource(Enum):
     LOCAL = "local"
@@ -26,3 +31,9 @@ class Event(Base):
     created_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     updated_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     source: Mapped[EventSource] = mapped_column(default=EventSource.LOCAL)
+    recurrence_rule: Mapped[Optional[RecurrenceRule]] = relationship(
+        back_populates="event",
+        cascade="all, delete-orphan",
+        init=False
+    )
+

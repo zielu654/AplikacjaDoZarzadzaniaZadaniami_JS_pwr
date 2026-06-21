@@ -14,6 +14,6 @@ class EventDTO:
     end_datetime: datetime | None
     is_high_priority: bool | None
     is_completed: bool | None
-
-    category: Optional[CategoryDTO] = None
+    rrule_str: str | None = None
+    category: CategoryDTO | None = None
     source: EventSource = EventSource.LOCAL

@@ -7,6 +7,7 @@ from unicodedata import category
 from DTO.category_DTO import CategoryDTO
 from DTO.event_DTO import EventDTO
 from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
+from Models.recurrence_rule import RecurrenceRule
 from Models.sync_metadata import SyncMetadata
 from DatabaseSqlAlchemy.interfaces import IEventRepository
 from Models.event import Event, EventSource
@@ -31,6 +32,10 @@ class SqlAlchemyEventRepository(IEventRepository):
             created_at=datetime.now(),
             source=event_dto.source
         )
+
+        if event_dto.rrule_str:
+            new_rule = RecurrenceRule(rrule_string=event_dto.rrule_str)
+            new_event.recurrence_rule = new_rule
         self.session.add(new_event)
         self.session.commit()
         return new_event.id
@@ -51,6 +56,16 @@ class SqlAlchemyEventRepository(IEventRepository):
         existing_event.is_high_priority = event_dto.is_high_priority
         existing_event.is_completed = event_dto.is_completed
         existing_event.category_id = event_dto.category.id if event_dto.category else getattr(event_dto, 'category_id', None)
+        new_rrule_str = event_dto.rrule_str
+
+        if existing_event.recurrence_rule:
+            if new_rrule_str:
+                existing_event.recurrence_rule.rrule_string = new_rrule_str
+            else:
+                existing_event.recurrence_rule = None
+        else:
+            if new_rrule_str:
+                existing_event.recurrence_rule = RecurrenceRule(rrule_string=new_rrule_str)
 
         existing_event.updated_at = datetime.now()
         self.session.commit()
@@ -105,7 +120,7 @@ class SqlAlchemyEventRepository(IEventRepository):
                 color_name=event.category.color.display_name,
                 sync_enabled=event.category.sync_enabled
             )
-
+        rrule = event.recurrence_rule.rrule_string if event.recurrence_rule else None
         return EventDTO(
             id=event.id,
             title=event.title,
@@ -114,5 +129,7 @@ class SqlAlchemyEventRepository(IEventRepository):
             end_datetime=event.end_datetime,
             is_high_priority=event.is_high_priority,
             is_completed=event.is_completed,
-            category=cat_dto
+            category=cat_dto,
+            rrule_str=rrule,
+            source=event.source
         )
