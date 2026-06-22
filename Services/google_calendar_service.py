@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import List
+from typing import List, Dict, Union
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -8,6 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from DTO.deleted_google_event_DTO import DeletedGoogleEventDTO
 from DTO.event_DTO import EventDTO
 from DTO.user_credentials_DTO import UserCredentialsDTO
 from DatabaseSqlAlchemy.interfaces import IUserCredentialsRepository
@@ -48,7 +49,7 @@ class GoogleCalendarService:
 
         return build('calendar', 'v3', credentials=creds)
 
-    def add_event(self, event_dto: EventDTO) -> str:
+    def push_event(self, event_dto: EventDTO) -> str:
         google_event_body = self._map_dto_to_google(event_dto)
 
         created_event = self.service.events().insert(
@@ -70,9 +71,10 @@ class GoogleCalendarService:
         ).execute()
 
         google_events = events_result.get('items', [])
-        return [self._map_google_to_dto(ge) for ge in google_events]
 
-    def update_event(self, google_id: str, dto: EventDTO) -> None:
+        return [dto for ge in google_events if isinstance((dto := self._map_google_to_dto(ge)), EventDTO)]
+
+    def update_event(self, dto: EventDTO) -> None:
         if not self.service:
             raise GoogleAuthError("Brak aktywnego połączenia z Google Calendar.")
 
@@ -80,13 +82,13 @@ class GoogleCalendarService:
             body = self._map_dto_to_google(dto)
             self.service.events().update(
                 calendarId=self.calendar_id,
-                eventId=google_id,
+                eventId=dto.google_event_id,
                 body=body
             ).execute()
 
         except HttpError as e:
             if e.resp.status == 404:
-                raise GoogleEventNotFoundError(f"Wydarzenie o ID {google_id} nie istnieje w Google Calendar.")
+                raise GoogleEventNotFoundError(f"Wydarzenie o ID {dto.google_event_id} nie istnieje w Google Calendar.")
 
             raise GoogleCalendarError(f"Błąd HTTP podczas aktualizacji wydarzenia w Google: {e._get_reason()}")
 
@@ -111,6 +113,25 @@ class GoogleCalendarService:
         except Exception as e:
             raise GoogleCalendarError(f"Nieoczekiwany błąd podczas komunikacji z Google: {e}")
 
+    def get_events_since(self, last_sync_date: datetime) -> list[EventDTO | DeletedGoogleEventDTO]:
+        if last_sync_date.tzinfo is None:
+            updated_min = last_sync_date.isoformat() + "Z"
+        else:
+            updated_min = last_sync_date.isoformat()
+
+        try:
+            events_result = self.service.events().list(
+                calendarId=getattr(self, 'calendar_id', 'primary'),
+                updatedMin=updated_min,
+                showDeleted=True,
+                singleEvents=False
+            ).execute()
+
+            raw_items =  events_result.get('items', [])
+            return [self._map_google_to_dto(item) for item in raw_items]
+        except Exception as e:
+            raise GoogleCalendarError(f"Nieoczekiwany błąd podczas komunikacji z Google: {e}")
+
     def _map_dto_to_google(self, dto: EventDTO) -> dict:
         start_str = dto.start_datetime.isoformat() if dto.start_datetime else datetime.datetime.now().isoformat()
         end_str = dto.end_datetime.isoformat() if dto.end_datetime else (
@@ -128,6 +149,8 @@ class GoogleCalendarService:
                 'timeZone': 'Europe/Warsaw',
             }
         }
+        if dto.google_event_id:
+            body['id'] = dto.google_event_id
 
         if dto.rrule_str:
             body['recurrence'] = [f"RRULE:{dto.rrule_str}"]
@@ -137,9 +160,27 @@ class GoogleCalendarService:
 
         return body
 
-    def _map_google_to_dto(self, google_event: dict) -> EventDTO:
-        start_data = google_event['start'].get('dateTime', google_event['start'].get('date'))
-        end_data = google_event['end'].get('dateTime', google_event['end'].get('date'))
+    def _map_google_to_dto(self, google_event: dict) -> Union[EventDTO, DeletedGoogleEventDTO]:
+        google_event_id = google_event.get('id')
+
+        updated_at_dt = None
+        google_updated_str = google_event.get('updated')
+        if google_updated_str:
+            if google_updated_str.endswith('Z'):
+                google_updated_str = google_updated_str.replace('Z', '+00:00')
+            updated_at_dt = datetime.datetime.fromisoformat(google_updated_str)
+
+        if google_event.get('status') == 'cancelled':
+            return DeletedGoogleEventDTO(
+                google_event_id=google_event_id,
+                updated_at=updated_at_dt
+            )
+
+        start_info = google_event.get('start', {})
+        end_info = google_event.get('end', {})
+
+        start_data = start_info.get('dateTime', start_info.get('date'))
+        end_data = end_info.get('dateTime', end_info.get('date'))
 
         start_dt = datetime.datetime.fromisoformat(start_data) if start_data else None
         end_dt = datetime.datetime.fromisoformat(end_data) if end_data else None
@@ -160,5 +201,7 @@ class GoogleCalendarService:
             is_completed=False,
             rrule_str=rrule_str,
             source=EventSource.GOOGLE,
-            category=None
+            category=None,
+            google_event_id=google_event_id,
+            updated_at=updated_at_dt
         )

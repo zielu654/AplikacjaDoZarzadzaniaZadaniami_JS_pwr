@@ -17,3 +17,5 @@ class EventDTO:
     rrule_str: str | None = None
     category: CategoryDTO | None = None
     source: EventSource = EventSource.LOCAL
+    updated_at: datetime | None = None
+    google_event_id: str | None = None

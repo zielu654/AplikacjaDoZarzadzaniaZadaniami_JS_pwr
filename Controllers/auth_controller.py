@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from typing import Optional
 
 from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
@@ -47,3 +48,14 @@ class AuthController:
             return calendar.get('id')
         except HttpError as e:
             return None
+
+    def get_last_sync_time(self) -> Optional[datetime]:
+        creds = self._credentials_repo.get_by_user_id(self._user_id)
+        return creds.last_synced if creds else None
+
+    def update_last_sync_time(self, sync_time: datetime) -> None:
+        self._credentials_repo.update_last_synced(self._user_id, sync_time)
+
+    @property
+    def current_user_id(self) -> int:
+        return self._user_id

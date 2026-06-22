@@ -30,16 +30,31 @@ class SqlAlchemyUserCredentialsRepository(IUserCredentialsRepository):
 
         if existing_creds:
             existing_creds.token_data = credentials_dto.token_data
+            if credentials_dto.last_synced is not None:
+                existing_creds.last_synced = credentials_dto.last_synced
             existing_creds.updated_at = datetime.now()
         else:
             new_creds = UserCredentials(
                 user_id=credentials_dto.user_id,
                 token_data=credentials_dto.token_data,
                 created_at=datetime.now(),
-                updated_at=datetime.now()
+                updated_at=datetime.now(),
+                last_synced=credentials_dto.last_synced
             )
             self.session.add(new_creds)
 
+        self.session.commit()
+
+    @db_error_handler
+    def update_last_synced(self, user_id: int, sync_time: datetime) -> None:
+        creds = self.session.query(UserCredentials).filter(
+            UserCredentials.user_id == user_id
+        ).first()
+
+        if not creds:
+            raise RecordNotFoundError(f"Nie znaleziono poświadczeń dla użytkownika {user_id}")
+
+        creds.last_synced = sync_time
         self.session.commit()
 
     @db_error_handler
@@ -57,5 +72,6 @@ class SqlAlchemyUserCredentialsRepository(IUserCredentialsRepository):
     def _map_to_dto(self, creds: UserCredentials) -> UserCredentialsDTO:
         return UserCredentialsDTO(
             user_id=creds.user_id,
-            token_data=creds.token_data
+            token_data=creds.token_data,
+            last_synced=creds.last_synced
         )

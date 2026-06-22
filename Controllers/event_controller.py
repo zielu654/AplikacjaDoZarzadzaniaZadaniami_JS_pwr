@@ -125,3 +125,48 @@ class EventController:
     def trigger_manual_sync(self) -> None:
         """Ręczne wywołanie pełnej synchronizacji dwustronnej z Google Calendar"""
         self._sync_mediator.run_two_way_sync()
+
+    def get_events_modified_since(self, since_date: datetime) -> list[EventDTO]:
+        """Pobiera wydarzenia zmodyfikowane lokalnie od ostatniej synchronizacji"""
+        return self._event_repo.query().modified_since(since_date).get_list()
+
+    def get_event_by_google_id(self, google_id: str) -> Optional[EventDTO]:
+        """Pobiera pojedyncze wydarzenie z bazy na podstawie identyfikatora z Google Calendar"""
+        results = self._event_repo.query().by_google_id(google_id).get_list()
+
+        return results[0] if results else None
+
+    def sync_update_from_google(self, event_id: int, g_event: EventDTO, sync_time: datetime) -> None:
+        """Nadpisuje lokalne wydarzenie danymi z Google (Google wygrał konflikt LWW)"""
+        event = self._event_repo.get_by_id(event_id)
+        if event:
+            event.title = g_event.title
+            event.description = g_event.description
+            event.start_datetime = g_event.start_datetime
+            event.end_datetime = g_event.end_datetime
+            event.rrule_str = g_event.rrule_str
+            event.updated_at = g_event.updated_at
+            event.last_synced = sync_time
+            self._event_repo.update(event)
+
+    def sync_create_from_google(self, g_event: EventDTO, sync_time: datetime) -> None:
+        """Zapisuje w bazie całkowicie nowe wydarzenie pobrane z Google"""
+        g_event.last_synced = sync_time
+        self._event_repo.add(g_event)
+
+    def sync_update_metadata(self, event_id: int, google_id: str, sync_time: datetime) -> None:
+        """Aktualizuje tylko metadane synchronizacji (np. po wypchnięciu nowego eventu do Google)"""
+        event = self._event_repo.get_by_id(event_id)
+        if event:
+            event.google_event_id = google_id
+            event.last_synced = sync_time
+            self._event_repo.update(event)
+
+    def sync_hard_delete(self, event_id: int) -> None:
+        """Trwale usuwa rekord z bazy danych (czyszczenie po usunięciu z obu stron)"""
+        # Zakładamy, że interfejs repozytorium posiada metodę do pełnego usuwania
+        if hasattr(self._event_repo, 'hard_delete'):
+            self._event_repo.hard_delete(event_id)
+        else:
+            # Fallback jeśli masz tylko standardowe delete
+            self._event_repo.delete(event_id)

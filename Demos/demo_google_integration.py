@@ -83,7 +83,7 @@ def run_demo():
     print("📤 Wysyłanie wydarzeń do chmury Google...")
     google_ids = []
     for ev in events_to_send:
-        g_id = google_service.add_event(ev)
+        g_id = google_service.push_event(ev)
         google_ids.append(g_id)
         print(f"   -> Wysłano: '{ev.title}' (Nadane ID Google: {g_id})")
     print("✅ Zakończono wysyłanie.\n")

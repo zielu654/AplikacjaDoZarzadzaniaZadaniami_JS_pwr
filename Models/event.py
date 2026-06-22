@@ -10,6 +10,7 @@ from Models.base import Base
 
 if TYPE_CHECKING:
     from Models.recurrence_rule import RecurrenceRule
+    from Models.sync_metadata import SyncMetadata
 
 class EventSource(Enum):
     LOCAL = "local"
@@ -32,6 +33,11 @@ class Event(Base):
     updated_at: Mapped[Optional[datetime]] = mapped_column(default=None)
     source: Mapped[EventSource] = mapped_column(default=EventSource.LOCAL)
     recurrence_rule: Mapped[Optional[RecurrenceRule]] = relationship(
+        back_populates="event",
+        cascade="all, delete-orphan",
+        init=False
+    )
+    sync_metadata: Mapped[Optional[SyncMetadata]] = relationship(
         back_populates="event",
         cascade="all, delete-orphan",
         init=False

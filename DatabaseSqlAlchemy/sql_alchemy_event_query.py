@@ -60,24 +60,41 @@ class SqlAlchemyEventQuery(IEventQuery):
 
         dtos = []
         for event in db_events:
-            cat_dto = None
-            if event.category_id:
-                cat_dto = CategoryDTO(
-                    id=event.category.id,
-                    name=event.category.name,
-                    color=event.category.color,
-                    sync_enabled=event.category.sync_enabled
-                )
-
-            dtos.append(EventDTO(
-                id=event.id,
-                title=event.title,
-                description=event.description,
-                start_datetime=event.start_datetime,
-                end_datetime=event.end_datetime,
-                is_high_priority=event.is_high_priority,
-                is_completed=event.is_completed,
-                category=cat_dto
-            ))
+            dtos.append(self.map_to_dto(event))
 
         return dtos
+
+    def by_google_id(self, google_id: str) -> 'SqlAlchemyEventQuery':
+        """Filtruje wydarzenia po identyfikatorze z Google Calendar"""
+        from Models.sync_metadata import SyncMetadata  # Import awaryjny, w razie gdyby nie było go na górze pliku
+
+        self._query = self._query.filter(Event.sync_metadata.has(SyncMetadata.google_event_id == google_id))
+        return self
+
+    @staticmethod
+    def map_to_dto(event: Event) -> EventDTO:
+        """Prywatna metoda pomocnicza, żeby nie powtarzać kodu mapowania"""
+        cat_dto = None
+        if event.category_id and event.category:
+            cat_dto = CategoryDTO(
+                id=event.category.id,
+                name=event.category.name,
+                color=event.category.color,
+                sync_enabled=event.category.sync_enabled
+            )
+        rrule = event.recurrence_rule.rrule_string if event.recurrence_rule else None
+        google_id = event.sync_metadata.google_event_id if event.sync_metadata else None
+        return EventDTO(
+            id=event.id,
+            title=event.title,
+            description=event.description,
+            start_datetime=event.start_datetime,
+            end_datetime=event.end_datetime,
+            is_high_priority=event.is_high_priority,
+            is_completed=event.is_completed,
+            category=cat_dto,
+            rrule_str=rrule,
+            source=event.source,
+            updated_at=event.updated_at,
+            google_event_id=google_id
+        )

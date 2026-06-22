@@ -37,6 +37,9 @@ class SqlAlchemyEventRepository(IEventRepository):
         if event_dto.rrule_str:
             new_rule = RecurrenceRule(rrule_string=event_dto.rrule_str)
             new_event.recurrence_rule = new_rule
+        if event_dto.google_event_id:
+            new_google_id = SyncMetadata(google_event_id=event_dto.google_event_id, last_synced=datetime.now())
+            new_event.sync_metadata = new_google_id
         self.session.add(new_event)
         self.session.commit()
         return new_event.id
@@ -57,6 +60,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         existing_event.is_high_priority = event_dto.is_high_priority
         existing_event.is_completed = event_dto.is_completed
         existing_event.category_id = event_dto.category.id if event_dto.category else getattr(event_dto, 'category_id', None)
+
         new_rrule_str = event_dto.rrule_str
 
         if existing_event.recurrence_rule:
@@ -67,6 +71,17 @@ class SqlAlchemyEventRepository(IEventRepository):
         else:
             if new_rrule_str:
                 existing_event.recurrence_rule = RecurrenceRule(rrule_string=new_rrule_str)
+
+        new_google_id = event_dto.google_event_id
+
+        if existing_event.sync_metadata:
+            if new_google_id:
+                existing_event.sync_metadata.google_event_id = new_google_id
+            else:
+                existing_event.sync_metadata = None
+        else:
+            if new_google_id:
+                existing_event.sync_metadata = SyncMetadata(google_event_id=new_google_id)
 
         existing_event.updated_at = datetime.now()
         self.session.commit()
@@ -84,7 +99,7 @@ class SqlAlchemyEventRepository(IEventRepository):
     @db_error_handler
     def get_all(self) -> List[EventDTO]:
         events = self.session.query(Event).filter(Event.is_deleted == False).all()
-        return [self._map_to_dto(e) for e in events]
+        return [SqlAlchemyEventQuery.map_to_dto(e) for e in events]
 
     @db_error_handler
     def get_dirty_records(self) -> List[EventDTO]:
@@ -96,40 +111,17 @@ class SqlAlchemyEventRepository(IEventRepository):
         events = self.session.query(Event).filter(
             Event.updated_at > syncDate
         ).all()
-        return [self._map_to_dto(e) for e in events]
+        return [SqlAlchemyEventQuery.map_to_dto(e) for e in events]
 
     @db_error_handler
     def get_by_id(self, event_id: int) -> Optional[EventDTO]:
         event = self.session.get(Event, event_id)
         if not event or event.is_deleted:
             return None
-        return self._map_to_dto(event)
+        return SqlAlchemyEventQuery.map_to_dto(event)
 
     @db_error_handler
     def query(self) -> SqlAlchemyEventQuery:
         """Zwraca gotowy do filtrowania obiekt EventQuery używając sesji repozytorium"""
         return SqlAlchemyEventQuery(self.session)
 
-    def _map_to_dto(self, event: Event) -> EventDTO:
-        """Prywatna metoda pomocnicza, żeby nie powtarzać kodu mapowania"""
-        cat_dto = None
-        if event.category_id and event.category:
-            cat_dto = CategoryDTO(
-                id=event.category.id,
-                name=event.category.name,
-                color=event.category.color,
-                sync_enabled=event.category.sync_enabled
-            )
-        rrule = event.recurrence_rule.rrule_string if event.recurrence_rule else None
-        return EventDTO(
-            id=event.id,
-            title=event.title,
-            description=event.description,
-            start_datetime=event.start_datetime,
-            end_datetime=event.end_datetime,
-            is_high_priority=event.is_high_priority,
-            is_completed=event.is_completed,
-            category=cat_dto,
-            rrule_str=rrule,
-            source=event.source
-        )

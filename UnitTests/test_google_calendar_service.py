@@ -85,7 +85,7 @@ def test_add_event_sends_insert_request_to_google(google_service):
     mock_insert = MagicMock(return_value=MagicMock(execute=mock_execute))
     google_service.service.events.return_value = MagicMock(insert=mock_insert)
 
-    returned_id = google_service.add_event(dto)
+    returned_id = google_service.push_event(dto)
 
     assert returned_id == 'id_nadane_przez_google_999'
     mock_insert.assert_called_once()
@@ -130,14 +130,14 @@ def test_update_event_sends_put_request_to_google(google_service):
     end_dt = datetime.datetime(2026, 6, 21, 11, 0)
     updated_dto = EventDTO(
         id=None, title="Zaktualizowany Tytuł", description="Zmieniony opis",
-        start_datetime=start_dt, end_datetime=end_dt, is_high_priority=False, is_completed=False
+        start_datetime=start_dt, end_datetime=end_dt, is_high_priority=False, is_completed=False, google_event_id='google_id_777'
     )
 
     mock_execute = MagicMock()
     mock_update = MagicMock(return_value=MagicMock(execute=mock_execute))
     google_service.service.events.return_value = MagicMock(update=mock_update)
 
-    google_service.update_event('google_id_777', updated_dto)
+    google_service.update_event(updated_dto)
 
     mock_update.assert_called_once()
     _, kwargs = mock_update.call_args
@@ -184,10 +184,10 @@ def test_update_event_raises_custom_error_on_404(google_service):
 
     dummy_dto = EventDTO(id=None, title="Test", description=None, start_datetime=datetime.datetime.now(),
                          end_datetime=datetime.datetime.now(), is_high_priority=False, is_completed=False,
-                         category=None)
+                         category=None, google_event_id='ghost_id_777')
 
     with pytest.raises(GoogleEventNotFoundError) as excinfo:
-        google_service.update_event('ghost_id_777', dummy_dto)
+        google_service.update_event(dummy_dto)
 
     assert 'nie istnieje' in str(excinfo.value).lower() or 'not found' in str(excinfo.value).lower()
 
@@ -215,3 +215,55 @@ def test_network_failure_raises_google_calendar_error(google_service):
         google_service.delete_event('some_id')
 
     assert 'nieoczekiwany błąd' in str(excinfo.value).lower()
+
+
+def test_get_events_since_success_with_naive_datetime(google_service):
+    last_sync = datetime.datetime(2026, 6, 22, 10, 0, 0)
+    mock_items = [
+        {'id': 'e1', 'status': 'confirmed', 'summary': 'Zwykły event'},
+        {'id': 'e2', 'status': 'cancelled'}
+    ]
+
+    mock_execute = MagicMock(return_value={'items': mock_items})
+    mock_list = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(list=mock_list)
+
+    results = google_service.get_events_since(last_sync)
+
+    assert len(results) == 2
+    assert results[0].google_event_id == 'e1'
+    assert results[0].title == 'Zwykły event'
+    assert results[1].google_event_id == 'e2'
+    mock_list.assert_called_once()
+
+    _, kwargs = mock_list.call_args
+    assert kwargs['updatedMin'] == "2026-06-22T10:00:00Z"
+    assert kwargs['showDeleted'] is True
+    assert kwargs['singleEvents'] is False
+
+
+def test_get_events_since_success_with_aware_datetime(google_service):
+    last_sync = datetime.datetime(2026, 6, 22, 10, 0, 0, tzinfo=datetime.timezone.utc)
+
+    mock_execute = MagicMock(return_value={'items': []})
+    mock_list = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(list=mock_list)
+
+    google_service.get_events_since(last_sync)
+
+    _, kwargs = mock_list.call_args
+    assert kwargs['updatedMin'] == "2026-06-22T10:00:00+00:00"
+
+
+def test_get_events_since_raises_google_calendar_error_on_exception(google_service):
+    last_sync = datetime.datetime(2026, 6, 22, 10, 0, 0)
+
+    mock_execute = MagicMock(side_effect=Exception("API limit exceeded"))
+    mock_list = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(list=mock_list)
+
+    with pytest.raises(GoogleCalendarError) as excinfo:
+        google_service.get_events_since(last_sync)
+
+    assert "nieoczekiwany błąd" in str(excinfo.value).lower()
+    assert "api limit exceeded" in str(excinfo.value).lower()
