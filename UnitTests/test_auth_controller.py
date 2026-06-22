@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from Controllers.auth_controller import AuthController
-from DTO.user_credentials_DTO import UserCredentialsDTO
+from DTO.user_credentialsDTO import UserCredentialsDTO
 
 
 @pytest.fixture

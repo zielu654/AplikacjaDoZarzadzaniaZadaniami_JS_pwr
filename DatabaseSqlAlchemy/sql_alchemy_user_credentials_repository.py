@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from DTO.user_credentials_DTO import UserCredentialsDTO
+from DTO.user_credentialsDTO import UserCredentialsDTO
 from Models.user_credentials import UserCredentials
-from DatabaseSqlAlchemy.interfaces import IUserCredentialsRepository
-from DatabaseSqlAlchemy.exceptions import db_error_handler, RecordNotFoundError
+from Core.interfaces import IUserCredentialsRepository
+from Core.exceptions import db_error_handler, RecordNotFoundError
 
 
 class SqlAlchemyUserCredentialsRepository(IUserCredentialsRepository):

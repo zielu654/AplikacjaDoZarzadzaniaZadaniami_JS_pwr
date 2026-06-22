@@ -2,17 +2,14 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy import func
-from unicodedata import category
 
-from DTO.category_DTO import CategoryDTO
-from DTO.event_DTO import EventDTO
+from DTO.eventDTO import EventDTO
 from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
-from Models.category import CalendarColor
 from Models.recurrence_rule import RecurrenceRule
 from Models.sync_metadata import SyncMetadata
-from DatabaseSqlAlchemy.interfaces import IEventRepository
-from Models.event import Event, EventSource
-from DatabaseSqlAlchemy.exceptions import RecordNotFoundError, db_error_handler
+from Core.interfaces import IEventRepository
+from Models.event import Event
+from Core.exceptions import RecordNotFoundError, db_error_handler
 
 class SqlAlchemyEventRepository(IEventRepository):
     def __init__(self, session):
@@ -39,7 +36,7 @@ class SqlAlchemyEventRepository(IEventRepository):
             new_event.recurrence_rule = new_rule
 
         self.session.add(new_event)
-        self.session.flush()  # flush żeby uzyskać new_event.id dla SyncMetadata
+        self.session.flush()
 
         if event_dto.google_event_id:
             new_event.sync_metadata = SyncMetadata(
@@ -102,7 +99,6 @@ class SqlAlchemyEventRepository(IEventRepository):
         event = self.session.get(Event, event_id)
         if not event or event.is_deleted:
             raise RecordNotFoundError(f"Wygarzenie o ID {event_id} nie istnieje!")
-        print(f"{self} is deleted")
         event.is_deleted = True
         event.updated_at = datetime.now(timezone.utc)
         self.session.commit()
@@ -110,11 +106,10 @@ class SqlAlchemyEventRepository(IEventRepository):
     @db_error_handler
     def get_all(self) -> List[EventDTO]:
         events = self.session.query(Event).filter(Event.is_deleted == False).all()
-        return [SqlAlchemyEventQuery.map_to_dto(e) for e in events]
+        return [SqlAlchemyEventQuery.map_to_dto(event) for event in events]
 
     @db_error_handler
     def get_dirty_records(self) -> List[EventDTO]:
-        """Niezsynchronizowane eventy"""
         syncDate = self.session.query(func.max(SyncMetadata.last_synced)).scalar()
         if syncDate is None:
             return self.session.query(Event).all()
@@ -122,7 +117,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         events = self.session.query(Event).filter(
             Event.updated_at > syncDate
         ).all()
-        return [SqlAlchemyEventQuery.map_to_dto(e) for e in events]
+        return [SqlAlchemyEventQuery.map_to_dto(event) for event in events]
 
     @db_error_handler
     def get_by_id(self, event_id: int) -> Optional[EventDTO]:
@@ -133,7 +128,6 @@ class SqlAlchemyEventRepository(IEventRepository):
 
     @db_error_handler
     def update_sync_metadata(self, event_id: int, google_event_id: str, last_synced: datetime) -> None:
-        """Aktualizuje TYLKO metadane synchronizacji, bez zmiany updated_at"""
         existing_event = self.session.get(Event, event_id)
         if not existing_event:
             raise RecordNotFoundError(f"Nie można zaktualizować metadanych. Event {event_id} nie istnieje.")
@@ -151,5 +145,4 @@ class SqlAlchemyEventRepository(IEventRepository):
 
     @db_error_handler
     def query(self) -> SqlAlchemyEventQuery:
-        """Zwraca gotowy do filtrowania obiekt EventQuery używając sesji repozytorium"""
         return SqlAlchemyEventQuery(self.session)

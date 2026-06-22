@@ -11,8 +11,8 @@ from Models.sync_metadata import SyncMetadata
 from Models.user_credentials import UserCredentials
 from Models.recurrence_rule import RecurrenceRule
 
-from DTO.category_DTO import CategoryDTO
-from DTO.event_DTO import EventDTO
+from DTO.categoryDTO import CategoryDTO
+from DTO.eventDTO import EventDTO
 
 from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
 from Models.category import CalendarColor

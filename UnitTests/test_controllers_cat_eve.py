@@ -8,7 +8,7 @@ from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategor
 from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from Controllers.category_controller import CategoryController
 from Controllers.event_controller import EventController
-from Controllers.exceptions import EmptyFieldError, ResourceNotFoundError, InvalidDateRangeError, ValidationError
+from Core.exceptions import EmptyFieldError, ResourceNotFoundError, InvalidDateRangeError, ValidationError
 
 @pytest.fixture
 def db_session():
@@ -88,11 +88,11 @@ def test_create_event_success(controllers):
     now = datetime.now()
 
     ev_id = event_ctrl.create_new_event(
-        title="  Nowe Zadanie  ",  # Testujemy czy strip() działa
+        title="  Nowe Zadanie  ",
         description="Brak",
         category_id=None,
-        start_dt=now,
-        end_dt=now + timedelta(hours=1),
+        start_datetime=now,
+        end_datetime=now + timedelta(hours=1),
         priority=True
     )
 
@@ -110,8 +110,8 @@ def test_create_event_invalid_dates_raises_error(controllers):
             title="Błąd dat",
             description="",
             category_id=None,
-            start_dt=now,
-            end_dt=now - timedelta(hours=1)  # Data zakończenia przed rozpoczęciem
+            start_datetime=now,
+            end_datetime=now - timedelta(hours=1)  # Data zakończenia przed rozpoczęciem
         )
 
 

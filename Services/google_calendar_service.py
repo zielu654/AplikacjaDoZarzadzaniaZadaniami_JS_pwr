@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import List, Dict, Union
+from typing import List, Union
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -8,12 +8,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from DTO.deleted_google_event_DTO import DeletedGoogleEventDTO
-from DTO.event_DTO import EventDTO
-from DTO.user_credentials_DTO import UserCredentialsDTO
-from DatabaseSqlAlchemy.interfaces import IUserCredentialsRepository
+from Core.exceptions import GoogleAuthError, GoogleEventNotFoundError, GoogleCalendarError
+from DTO.deleted_google_eventDTO import DeletedGoogleEventDTO
+from DTO.eventDTO import EventDTO
+from DTO.user_credentialsDTO import UserCredentialsDTO
+from Core.interfaces import IUserCredentialsRepository
 from Models.event import EventSource
-from Services.exceptions import GoogleAuthError, GoogleEventNotFoundError, GoogleCalendarError
 
 
 class GoogleCalendarService:
@@ -22,7 +22,7 @@ class GoogleCalendarService:
     def __init__(self,
                  credentials_repository: IUserCredentialsRepository,
                  current_user_id: int,
-                 credentials_path: str = 'Secrets/credentials.json',
+                 credentials_path: str = '../Secrets/credentials.json',
                  calendar_id: str = 'primary'):
         self.repo = credentials_repository
         self.user_id = current_user_id

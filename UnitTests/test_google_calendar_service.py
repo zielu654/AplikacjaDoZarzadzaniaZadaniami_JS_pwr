@@ -4,11 +4,13 @@ import pytest
 from unittest.mock import MagicMock, patch
 from googleapiclient.errors import HttpError
 import httplib2
+
+from Core.exceptions import GoogleCalendarError, GoogleEventNotFoundError
 from Services.google_calendar_service import GoogleCalendarService
-from DTO.event_DTO import EventDTO
-from DTO.user_credentials_DTO import UserCredentialsDTO
+from DTO.eventDTO import EventDTO
+from DTO.user_credentialsDTO import UserCredentialsDTO
 from Models.event import EventSource
-from Services.exceptions import GoogleEventNotFoundError, GoogleCalendarError
+
 
 @pytest.fixture
 def mock_repo():

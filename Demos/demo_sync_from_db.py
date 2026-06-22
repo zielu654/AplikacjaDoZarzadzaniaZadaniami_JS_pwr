@@ -10,10 +10,10 @@ from Controllers.event_controller import EventController
 from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
 from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
-from Demos.debug_sync import DB_PATH
 from Services.google_calendar_service import GoogleCalendarService
 from Services.sync_mediator import SyncMediator
 
+DB_PATH = "demo_test.db"
 
 def run_sync_demo():
     print("=" * 60)

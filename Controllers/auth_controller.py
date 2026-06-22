@@ -2,13 +2,13 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
+from Core.interfaces import IUserCredentialsRepository
 from Services.google_calendar_service import GoogleCalendarService
 from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 
 class AuthController:
-    def __init__(self, google_api_service: GoogleCalendarService, credentials_repo: SqlAlchemyUserCredentialsRepository, current_user_id: int = 1):
+    def __init__(self, google_api_service: GoogleCalendarService, credentials_repo: IUserCredentialsRepository, current_user_id: int = 1):
         self._google_api = google_api_service
         self._credentials_repo = credentials_repo
         self._user_id = current_user_id

@@ -1,11 +1,10 @@
 from datetime import datetime
 from typing import Optional, Dict
 
-from Controllers.exceptions import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError
-from DTO.event_DTO import EventDTO
-from DatabaseSqlAlchemy.interfaces import IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery
+from Core.exceptions import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError
+from DTO.eventDTO import EventDTO
+from Core.interfaces import IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery
 from Models.event import EventSource
-from Models.recurrence_rule import RecurrenceRule
 
 
 class EventController:
@@ -20,26 +19,26 @@ class EventController:
         self._sync_mediator = sync_mediator
 
     def create_new_event(self, title: str, description: str, category_id: Optional[int],
-                         start_dt: Optional[datetime] = None, end_dt: Optional[datetime] = None,
+                         start_datetime: Optional[datetime] = None, end_datetime: Optional[datetime] = None,
                          priority: bool = False, rrule: Optional[str] = None, source: EventSource = EventSource.LOCAL) -> int:
         """Tworzy nowe zadanie, waliduje i zapisuje."""
         if not title or not title.strip():
             raise EmptyFieldError("Tytuł wydarzenia nie może być pusty!")
 
-        if start_dt and end_dt and end_dt < start_dt:
+        if start_datetime and end_datetime and end_datetime < start_datetime:
             raise InvalidDateRangeError("Data zakończenia nie może być wcześniejsza niż rozpoczęcia!")
 
         if category_id is not None:
-            cat = self._category_repo.get_by_id(category_id)
-            if not cat:
+            found_category = self._category_repo.get_by_id(category_id)
+            if not found_category:
                 raise ResourceNotFoundError(f"Wybrana kategoria o ID {category_id} nie istnieje!")
 
         new_event = EventDTO(
             id=0,
             title=title.strip(),
             description=description.strip() if description else None,
-            start_datetime=start_dt,
-            end_datetime=end_dt,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
             is_high_priority=priority,
             is_completed=False,
             category=self._category_repo.get_by_id(category_id),
@@ -66,8 +65,8 @@ class EventController:
             event.title = str(new_title).strip()
 
         if 'description' in updates:
-            desc = updates['description']
-            event.description = str(desc).strip() if desc else None
+            new_description = updates['description']
+            event.description = str(new_description).strip() if new_description else None
 
         if 'priority' in updates:
             event.is_high_priority = bool(updates['priority'])
@@ -78,8 +77,8 @@ class EventController:
         if 'category_id' in updates:
             cat_id = updates['category_id']
             if cat_id is not None:
-                cat = self._category_repo.get_by_id(cat_id)
-                if not cat:
+                found_category = self._category_repo.get_by_id(cat_id)
+                if not found_category:
                     raise ResourceNotFoundError(f"Wybrana kategoria o ID {cat_id} nie istnieje!")
 
             event.category_id = cat_id
@@ -136,40 +135,36 @@ class EventController:
 
         return results[0] if results else None
 
-    def sync_update_from_google(self, event_id: int, g_event: EventDTO, sync_time: datetime) -> None:
+    def sync_update_from_google(self, event_id: int, google_event: EventDTO, sync_time: datetime) -> None:
         """Nadpisuje lokalne wydarzenie danymi z Google (Google wygrał konflikt LWW)"""
         event = self._event_repo.get_by_id(event_id)
         if event:
-            event.title = g_event.title
-            event.description = g_event.description
-            event.start_datetime = g_event.start_datetime
-            event.end_datetime = g_event.end_datetime
-            event.rrule_str = g_event.rrule_str
-            event.updated_at = g_event.updated_at
+            event.title = google_event.title
+            event.description = google_event.description
+            event.start_datetime = google_event.start_datetime
+            event.end_datetime = google_event.end_datetime
+            event.rrule_str = google_event.rrule_str
+            event.updated_at = google_event.updated_at
             event.last_synced = sync_time
             self._event_repo.update(event)
 
-    def sync_create_from_google(self, g_event: EventDTO, sync_time: datetime) -> None:
+    def sync_create_from_google(self, google_event: EventDTO, sync_time: datetime) -> None:
         """Zapisuje w bazie całkowicie nowe wydarzenie pobrane z Google"""
-        g_event.last_synced = sync_time
-        self._event_repo.add(g_event)
+        google_event.last_synced = sync_time
+        self._event_repo.add(google_event)
 
     def sync_update_metadata(self, event_id: int, google_id: str, sync_time: datetime) -> None:
         """Aktualizuje tylko metadane synchronizacji (np. po wypchnięciu nowego eventu do Google)"""
         if hasattr(self._event_repo, 'update_sync_metadata'):
             self._event_repo.update_sync_metadata(event_id, google_id, sync_time)
         else:
-            # fallback dla mocków w testach
             event = self._event_repo.get_by_id(event_id)
             if event:
                 event.google_event_id = google_id
                 self._event_repo.update(event)
 
     def sync_hard_delete(self, event_id: int) -> None:
-        """Trwale usuwa rekord z bazy danych (czyszczenie po usunięciu z obu stron)"""
-        # Zakładamy, że interfejs repozytorium posiada metodę do pełnego usuwania
         if hasattr(self._event_repo, 'hard_delete'):
             self._event_repo.hard_delete(event_id)
         else:
-            # Fallback jeśli masz tylko standardowe delete
             self._event_repo.delete(event_id)

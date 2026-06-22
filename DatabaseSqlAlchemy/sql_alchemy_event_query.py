@@ -2,9 +2,9 @@ from typing import List
 from datetime import datetime, date, time
 from sqlalchemy.orm import Session
 
-from DTO.category_DTO import CategoryDTO
-from DTO.event_DTO import EventDTO
-from DatabaseSqlAlchemy.interfaces import IEventQuery
+from DTO.categoryDTO import CategoryDTO
+from DTO.eventDTO import EventDTO
+from Core.interfaces import IEventQuery
 from Models.event import Event
 
 class SqlAlchemyEventQuery(IEventQuery):
@@ -13,7 +13,6 @@ class SqlAlchemyEventQuery(IEventQuery):
         self._query = self._session.query(Event).filter(Event.is_deleted == False)
 
     def overdue(self) -> 'SqlAlchemyEventQuery':
-        """Filtruje zadania, których termin minął i nie są zrobione"""
         now = datetime.now()
         self._query = self._query.filter(
             Event.end_datetime < now,
@@ -22,22 +21,18 @@ class SqlAlchemyEventQuery(IEventQuery):
         return self
 
     def high_priority(self) -> 'SqlAlchemyEventQuery':
-        """Filtruje tylko wysoki priorytet"""
         self._query = self._query.filter(Event.is_high_priority == True)
         return self
 
     def low_priority(self) -> 'SqlAlchemyEventQuery':
-        """Filtruje tylko niski priorytet"""
         self._query = self._query.filter(Event.is_high_priority == False)
         return self
 
     def by_category(self, category_id: int) -> 'SqlAlchemyEventQuery':
-        """Filtruje po ID kategorii"""
         self._query = self._query.filter(Event.category_id == category_id)
         return self
 
     def for_date(self, target_date: date) -> 'SqlAlchemyEventQuery':
-        """Filtruje zadania na konkretny dzień (porównując zakres od północy do 23:59)"""
         start_of_day = datetime.combine(target_date, time.min)
         end_of_day = datetime.combine(target_date, time.max)
 
@@ -47,7 +42,6 @@ class SqlAlchemyEventQuery(IEventQuery):
         return self
 
     def sort_by(self, field_name: str, ascending: bool = True) -> 'SqlAlchemyEventQuery':
-        """Dynamiczne sortowanie po polu"""
         column = getattr(Event, field_name, None)
         if column is not None:
             order_func = column.asc() if ascending else column.desc()
@@ -55,7 +49,6 @@ class SqlAlchemyEventQuery(IEventQuery):
         return self
 
     def get_list(self) -> List[EventDTO]:
-        """Uruchamia zapytanie w bazie, mapuje wyniki i zwraca gotowe DTO"""
         db_events = self._query.all()
 
         dtos = []
@@ -65,20 +58,17 @@ class SqlAlchemyEventQuery(IEventQuery):
         return dtos
 
     def by_google_id(self, google_id: str) -> 'SqlAlchemyEventQuery':
-        """Filtruje wydarzenia po identyfikatorze z Google Calendar"""
         from Models.sync_metadata import SyncMetadata  # Import awaryjny, w razie gdyby nie było go na górze pliku
 
         self._query = self._query.filter(Event.sync_metadata.has(SyncMetadata.google_event_id == google_id))
         return self
 
     def modified_since(self, since_date: datetime) -> 'SqlAlchemyEventQuery':
-        """Filtruje wydarzenia zmodyfikowane po podanej dacie (używane do synchronizacji)"""
         self._query = self._query.filter(Event.updated_at > since_date)
         return self
 
     @staticmethod
     def map_to_dto(event: Event) -> EventDTO:
-        """Prywatna metoda pomocnicza, żeby nie powtarzać kodu mapowania"""
         cat_dto = None
         if event.category_id and event.category:
             cat_dto = CategoryDTO(

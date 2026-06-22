@@ -2,18 +2,40 @@ from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError
 
 class RepositoryError(Exception):
-    """Główna klasa błędu dla wszystkich problemów z bazą."""
     pass
 
 class RecordNotFoundError(RepositoryError):
-    """Rzucany, gdy szukany rekord (Event, Category itp.) nie istnieje."""
     pass
 
 class RecordAlreadyExistsError(RepositoryError):
-    """Rzucany, gdy próbujemy dodać rekord, który narusza unikalność (np. duplikat nazwy)."""
     pass
 
+class GoogleCalendarError(Exception):
+    pass
 
+class GoogleEventNotFoundError(GoogleCalendarError):
+    pass
+
+class GoogleAuthError(GoogleCalendarError):
+    pass
+
+class AppError(Exception):
+    pass
+
+class ValidationError(AppError):
+    pass
+
+class EmptyFieldError(ValidationError):
+    pass
+
+class InvalidDateRangeError(ValidationError):
+    pass
+
+class ResourceNotFoundError(AppError):
+    pass
+
+class AuthenticationError(AppError):
+    pass
 def db_error_handler(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):

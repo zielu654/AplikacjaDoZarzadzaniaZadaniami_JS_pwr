@@ -2,8 +2,8 @@ import datetime
 import pytest
 from unittest.mock import MagicMock
 
-from DTO.event_DTO import EventDTO
-from DTO.deleted_google_event_DTO import DeletedGoogleEventDTO
+from DTO.eventDTO import EventDTO
+from DTO.deleted_google_eventDTO import DeletedGoogleEventDTO
 from Models.event import EventSource
 
 

@@ -3,15 +3,14 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DTO.event_DTO import EventDTO
-from DTO.user_credentials_DTO import UserCredentialsDTO
+from DTO.eventDTO import EventDTO
+from DTO.user_credentialsDTO import UserCredentialsDTO
 from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
 from Models.sync_metadata import SyncMetadata
 from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from Models.base import Base
 from Models.event import Event
-from Models.category import Category
-from DatabaseSqlAlchemy.exceptions import RecordNotFoundError
+from Core.exceptions import RecordNotFoundError
 from Models.user_credentials import UserCredentials
 
 

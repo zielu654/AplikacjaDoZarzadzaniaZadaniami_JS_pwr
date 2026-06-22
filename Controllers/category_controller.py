@@ -1,8 +1,8 @@
 from typing import List, Optional, Dict
 
-from Controllers.exceptions import EmptyFieldError, ValidationError
-from DTO.category_DTO import CategoryDTO
-from DatabaseSqlAlchemy.interfaces import ICategoryRepository, IEventRepository
+from Core.exceptions import EmptyFieldError, ValidationError
+from DTO.categoryDTO import CategoryDTO
+from Core.interfaces import ICategoryRepository, IEventRepository
 from Models.category import CalendarColor
 
 

@@ -14,13 +14,14 @@ from Services.google_calendar_service import GoogleCalendarService
 from Services.sync_mediator import SyncMediator
 
 DB_PATH = "demo_test.db"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CREDENTIALS_PATH = os.path.join(BASE_DIR, 'Secrets', 'credentials.json')
 
 def run_demo():
     print("=" * 60)
     print("🚀 START DEMO APLIKACJI Z SYNCHRONIZACJĄ (KROK 1)")
     print("=" * 60)
-    
-    # Tworzymy czystą bazę w pliku, żeby drugi skrypt mógł ją odczytać
+
     if os.path.exists(DB_PATH):
         os.remove(DB_PATH)
         print(" -> Usunięto starą bazę demo_test.db")
@@ -34,20 +35,16 @@ def run_demo():
     ev_repo = SqlAlchemyEventRepository(session)
     cred_repo = SqlAlchemyUserCredentialsRepository(session)
 
-    # Inicjalizacja Google Service (wymaga ID użytkownika, np. 1)
-    google_service = GoogleCalendarService(cred_repo, current_user_id=1, credentials_path='../Secrets/credentials.json')
-    
-    # Inicjalizacja kontrolerów
+
+    google_service = GoogleCalendarService(cred_repo, current_user_id=1, credentials_path=CREDENTIALS_PATH)
+
     auth_ctrl = AuthController(google_service, cred_repo, current_user_id=1)
-    
-    # Mediator potrzebuje serwisów
+
     mediator = SyncMediator(google_service)
-    
-    # Przekazujemy mediatora do kontrolera zadań
+
     event_ctrl = EventController(ev_repo, cat_repo, mediator)
     cat_ctrl = CategoryController(cat_repo, ev_repo)
-    
-    # Zapinamy mediator z kontrolerami
+
     mediator.set_controllers(event_ctrl, auth_ctrl)
 
     print("\n[1] Logowanie do Google Calendar...")
@@ -67,8 +64,8 @@ def run_demo():
         title="Napisać demo dla użytkownika",
         description="Demo pokazujące jak działa synchronizacja (dodane lokalnie)",
         category_id=cat_work_id,
-        start_dt=now,
-        end_dt=now + timedelta(hours=1),
+        start_datetime=now,
+        end_datetime=now + timedelta(hours=1),
         priority=True
     )
     
@@ -76,8 +73,8 @@ def run_demo():
         title="Zadanie cykliczne - daily standup",
         description="Sprawdzamy jak działa RRULE z Google",
         category_id=cat_work_id,
-        start_dt=now + timedelta(days=1),
-        end_dt=now + timedelta(days=1, hours=1),
+        start_datetime=now + timedelta(days=1),
+        end_datetime=now + timedelta(days=1, hours=1),
         rrule="FREQ=DAILY;COUNT=3"
     )
     

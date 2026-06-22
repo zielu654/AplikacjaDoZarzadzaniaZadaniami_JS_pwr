@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List, Optional
 
-from DTO.category_DTO import CategoryDTO
-from Models.category import Category, CalendarColor
-from DatabaseSqlAlchemy.interfaces import ICategoryRepository
-from DatabaseSqlAlchemy.exceptions import RecordAlreadyExistsError, db_error_handler, RecordNotFoundError
+from DTO.categoryDTO import CategoryDTO
+from Models.category import Category
+from Core.interfaces import ICategoryRepository
+from Core.exceptions import RecordAlreadyExistsError, db_error_handler, RecordNotFoundError
 
 
 class SqlAlchemyCategoryRepository(ICategoryRepository):

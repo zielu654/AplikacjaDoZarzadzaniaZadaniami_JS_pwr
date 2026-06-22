@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-from DTO.category_DTO import CategoryDTO
+from DTO.categoryDTO import CategoryDTO
 from Models.event import EventSource
 
 
