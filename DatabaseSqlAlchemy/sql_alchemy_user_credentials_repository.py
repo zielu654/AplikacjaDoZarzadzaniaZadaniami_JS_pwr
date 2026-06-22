@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from DTO.user_credentials_DTO import UserCredentialsDTO
@@ -32,13 +32,13 @@ class SqlAlchemyUserCredentialsRepository(IUserCredentialsRepository):
             existing_creds.token_data = credentials_dto.token_data
             if credentials_dto.last_synced is not None:
                 existing_creds.last_synced = credentials_dto.last_synced
-            existing_creds.updated_at = datetime.now()
+            existing_creds.updated_at = datetime.now(timezone.utc)
         else:
             new_creds = UserCredentials(
                 user_id=credentials_dto.user_id,
                 token_data=credentials_dto.token_data,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
                 last_synced=credentials_dto.last_synced
             )
             self.session.add(new_creds)

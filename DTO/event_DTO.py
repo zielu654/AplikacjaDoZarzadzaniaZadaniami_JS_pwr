@@ -19,3 +19,4 @@ class EventDTO:
     source: EventSource = EventSource.LOCAL
     updated_at: datetime | None = None
     google_event_id: str | None = None
+    last_synced: datetime | None = None

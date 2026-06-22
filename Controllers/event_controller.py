@@ -156,11 +156,14 @@ class EventController:
 
     def sync_update_metadata(self, event_id: int, google_id: str, sync_time: datetime) -> None:
         """Aktualizuje tylko metadane synchronizacji (np. po wypchnięciu nowego eventu do Google)"""
-        event = self._event_repo.get_by_id(event_id)
-        if event:
-            event.google_event_id = google_id
-            event.last_synced = sync_time
-            self._event_repo.update(event)
+        if hasattr(self._event_repo, 'update_sync_metadata'):
+            self._event_repo.update_sync_metadata(event_id, google_id, sync_time)
+        else:
+            # fallback dla mocków w testach
+            event = self._event_repo.get_by_id(event_id)
+            if event:
+                event.google_event_id = google_id
+                self._event_repo.update(event)
 
     def sync_hard_delete(self, event_id: int) -> None:
         """Trwale usuwa rekord z bazy danych (czyszczenie po usunięciu z obu stron)"""

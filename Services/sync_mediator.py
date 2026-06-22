@@ -27,7 +27,7 @@ class SyncMediator:
 
         last_sync_time = self.auth_controller.get_last_sync_time()
         if not last_sync_time:
-            last_sync_time = current_sync_start - datetime.timedelta(days=30)
+            last_sync_time = current_sync_start - datetime.timedelta(days=21)
 
         google_changes = self.google_service.get_events_since(last_sync_time)
         raw_local_changes = self.event_controller.get_events_modified_since(last_sync_time)
@@ -71,7 +71,6 @@ class SyncMediator:
     def _push_local_updates_to_google(self, local_events_by_google_id: dict, google_events_by_id: dict, sync_time: datetime.datetime):
         """Faza 3: Wysyłanie lokalnych modyfikacji (bez konfliktów) do Google"""
         for g_id, local_event in local_events_by_google_id.items():
-            # Przetwarzamy tylko te, które nie były zmodyfikowane po obu stronach (zajęliśmy się nimi w Fazie 2)
             if g_id not in google_events_by_id:
                 try:
                     if getattr(local_event, 'is_deleted', False):

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy import func
@@ -29,18 +29,24 @@ class SqlAlchemyEventRepository(IEventRepository):
             is_high_priority=event_dto.is_high_priority,
             is_completed=event_dto.is_completed,
             is_deleted=False,
-            updated_at=datetime.now(),
-            created_at=datetime.now(),
+            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
             source=event_dto.source
         )
 
         if event_dto.rrule_str:
             new_rule = RecurrenceRule(rrule_string=event_dto.rrule_str)
             new_event.recurrence_rule = new_rule
-        if event_dto.google_event_id:
-            new_google_id = SyncMetadata(google_event_id=event_dto.google_event_id, last_synced=datetime.now())
-            new_event.sync_metadata = new_google_id
+
         self.session.add(new_event)
+        self.session.flush()  # flush żeby uzyskać new_event.id dla SyncMetadata
+
+        if event_dto.google_event_id:
+            new_event.sync_metadata = SyncMetadata(
+                event_id=new_event.id,
+                google_event_id=event_dto.google_event_id,
+                last_synced=datetime.now(timezone.utc)
+            )
         self.session.commit()
         return new_event.id
 
@@ -75,15 +81,20 @@ class SqlAlchemyEventRepository(IEventRepository):
         new_google_id = event_dto.google_event_id
 
         if existing_event.sync_metadata:
-            if new_google_id:
+            if new_google_id is not None:
                 existing_event.sync_metadata.google_event_id = new_google_id
+                existing_event.sync_metadata.last_synced = datetime.now(timezone.utc)
             else:
                 existing_event.sync_metadata = None
         else:
             if new_google_id:
-                existing_event.sync_metadata = SyncMetadata(google_event_id=new_google_id)
+                existing_event.sync_metadata = SyncMetadata(
+                    event_id=existing_event.id,
+                    google_event_id=new_google_id,
+                    last_synced=datetime.now(timezone.utc)
+                )
 
-        existing_event.updated_at = datetime.now()
+        existing_event.updated_at = datetime.now(timezone.utc)
         self.session.commit()
 
     @db_error_handler
@@ -93,7 +104,7 @@ class SqlAlchemyEventRepository(IEventRepository):
             raise RecordNotFoundError(f"Wygarzenie o ID {event_id} nie istnieje!")
         print(f"{self} is deleted")
         event.is_deleted = True
-        event.updated_at = datetime.now()
+        event.updated_at = datetime.now(timezone.utc)
         self.session.commit()
 
     @db_error_handler
@@ -121,7 +132,24 @@ class SqlAlchemyEventRepository(IEventRepository):
         return SqlAlchemyEventQuery.map_to_dto(event)
 
     @db_error_handler
+    def update_sync_metadata(self, event_id: int, google_event_id: str, last_synced: datetime) -> None:
+        """Aktualizuje TYLKO metadane synchronizacji, bez zmiany updated_at"""
+        existing_event = self.session.get(Event, event_id)
+        if not existing_event:
+            raise RecordNotFoundError(f"Nie można zaktualizować metadanych. Event {event_id} nie istnieje.")
+
+        if existing_event.sync_metadata:
+            existing_event.sync_metadata.google_event_id = google_event_id
+            existing_event.sync_metadata.last_synced = last_synced
+        else:
+            existing_event.sync_metadata = SyncMetadata(
+                event_id=existing_event.id,
+                google_event_id=google_event_id,
+                last_synced=last_synced
+            )
+        self.session.commit()
+
+    @db_error_handler
     def query(self) -> SqlAlchemyEventQuery:
         """Zwraca gotowy do filtrowania obiekt EventQuery używając sesji repozytorium"""
         return SqlAlchemyEventQuery(self.session)
-

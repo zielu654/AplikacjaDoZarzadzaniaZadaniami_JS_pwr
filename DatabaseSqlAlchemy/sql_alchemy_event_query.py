@@ -71,6 +71,11 @@ class SqlAlchemyEventQuery(IEventQuery):
         self._query = self._query.filter(Event.sync_metadata.has(SyncMetadata.google_event_id == google_id))
         return self
 
+    def modified_since(self, since_date: datetime) -> 'SqlAlchemyEventQuery':
+        """Filtruje wydarzenia zmodyfikowane po podanej dacie (używane do synchronizacji)"""
+        self._query = self._query.filter(Event.updated_at > since_date)
+        return self
+
     @staticmethod
     def map_to_dto(event: Event) -> EventDTO:
         """Prywatna metoda pomocnicza, żeby nie powtarzać kodu mapowania"""
@@ -84,6 +89,7 @@ class SqlAlchemyEventQuery(IEventQuery):
             )
         rrule = event.recurrence_rule.rrule_string if event.recurrence_rule else None
         google_id = event.sync_metadata.google_event_id if event.sync_metadata else None
+        last_synced = event.sync_metadata.last_synced if event.sync_metadata else None
         return EventDTO(
             id=event.id,
             title=event.title,
@@ -96,5 +102,6 @@ class SqlAlchemyEventQuery(IEventQuery):
             rrule_str=rrule,
             source=event.source,
             updated_at=event.updated_at,
-            google_event_id=google_id
+            google_event_id=google_id,
+            last_synced=last_synced
         )
