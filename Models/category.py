@@ -64,4 +64,4 @@ class Category(Base):
     color: Mapped[CalendarColor] = mapped_column(default=CalendarColor.DEFAULT)
     sync_enabled: Mapped[bool] = mapped_column(default=True)
     is_deleted: Mapped[bool] = mapped_column(default=False)
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(default_factory=datetime.now, onupdate=datetime.now)

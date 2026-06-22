@@ -8,8 +8,7 @@ from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategor
 from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
 from Controllers.category_controller import CategoryController
 from Controllers.event_controller import EventController
-from Controllers.exceptions import EmptyFieldError, ResourceNotFoundError, InvalidDateRangeError
-
+from Controllers.exceptions import EmptyFieldError, ResourceNotFoundError, InvalidDateRangeError, ValidationError
 
 @pytest.fixture
 def db_session():
@@ -180,3 +179,50 @@ def test_edit_event_removes_recurrence_rule_completely(controllers):
 
     updated = event_ctrl.get_event_by_id(ev_id)
     assert updated.rrule_str is None
+
+
+def test_edit_nonexistent_event_raises_not_found(controllers):
+    _, event_ctrl = controllers
+    with pytest.raises(ResourceNotFoundError):
+        event_ctrl.edit_event(9999, {'title': 'Nowy tytuł'})
+
+
+def test_mark_completed_nonexistent_event_raises_not_found(controllers):
+    _, event_ctrl = controllers
+    with pytest.raises(ResourceNotFoundError):
+        event_ctrl.mark_completed(9999)
+
+
+def test_create_event_with_fake_category_raises_not_found(controllers):
+    _, event_ctrl = controllers
+    with pytest.raises(ResourceNotFoundError):
+        event_ctrl.create_new_event("Tytuł", "Opis", category_id=9999)
+
+
+def test_create_category_with_invalid_color_raises_validation_error(controllers):
+    cat_ctrl, _ = controllers
+
+    with pytest.raises(ValidationError) as excinfo:
+        cat_ctrl.create_category("Zła kategoria", "#000000")
+
+    assert "nie pasuje do żadnego z dozwolonych kolorów" in str(excinfo.value)
+
+def test_delete_event_removes_it_from_active_queries(controllers):
+    _, event_ctrl = controllers
+    ev_id = event_ctrl.create_new_event("Do usunięcia", "Opis", None)
+
+    event_ctrl.delete_event(ev_id)
+
+    assert event_ctrl.get_event_by_id(ev_id) is None
+
+
+def test_edit_category_with_invalid_color_raises_validation_error(controllers):
+    cat_ctrl, _ = controllers
+
+    cat_id = cat_ctrl.create_category("Testowa", "#7986cb")  # Poprawny lavender
+
+    with pytest.raises(ValidationError):
+        cat_ctrl.edit_category(cat_id, {'color_hex': '#111111'})
+
+    with pytest.raises(ValidationError):
+        cat_ctrl.edit_category(cat_id, {'color_name': 'KolorSeledynowy'})

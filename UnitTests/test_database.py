@@ -209,3 +209,73 @@ def test_save_existing_user_credentials_updates_it(db_session):
     all_creds = db_session.query(UserCredentials).all()
     assert len(all_creds) == 1
     assert all_creds[0].token_data == '{"token": "nowy"}'
+
+
+def test_query_high_priority_returns_only_high_priority_events(db_session):
+    repo = SqlAlchemyEventRepository(db_session)
+
+    # Dodajemy jedno zwykłe i jedno ważne zadanie
+    repo.add(
+        EventDTO(id=0, title="Zwykłe", description=None, start_datetime=None, end_datetime=None, is_high_priority=False,
+                 is_completed=False, category=None))
+    repo.add(
+        EventDTO(id=0, title="Ważne", description=None, start_datetime=None, end_datetime=None, is_high_priority=True,
+                 is_completed=False, category=None))
+
+    results = repo.query().high_priority().get_list()
+
+    assert len(results) == 1
+    assert results[0].title == "Ważne"
+
+
+def test_query_overdue_returns_only_past_uncompleted_events(db_session):
+    repo = SqlAlchemyEventRepository(db_session)
+    past_date = datetime.now() - timedelta(days=2)
+    future_date = datetime.now() + timedelta(days=2)
+
+    # 1. Zaległe (data minęła, nieukończone)
+    repo.add(EventDTO(id=0, title="Zaległe", description=None, start_datetime=past_date, end_datetime=past_date,
+                      is_high_priority=False, is_completed=False, category=None))
+    # 2. Ukończone w przeszłości (nie jest zaległe, bo zrobione)
+    repo.add(EventDTO(id=0, title="Zrobione", description=None, start_datetime=past_date, end_datetime=past_date,
+                      is_high_priority=False, is_completed=True, category=None))
+    # 3. Przyszłe (jeszcze jest czas)
+    repo.add(EventDTO(id=0, title="Przyszłe", description=None, start_datetime=future_date, end_datetime=future_date,
+                      is_high_priority=False, is_completed=False, category=None))
+
+    results = repo.query().overdue().get_list()
+
+    assert len(results) == 1
+    assert results[0].title == "Zaległe"
+
+
+def test_query_for_date_returns_events_for_specific_day(db_session):
+    repo = SqlAlchemyEventRepository(db_session)
+    target_date = datetime(2026, 6, 21, 15, 0)  # Nasza docelowa data
+    other_date = datetime(2026, 6, 22, 10, 0)
+
+    repo.add(
+        EventDTO(id=0, title="W dany dzień", description=None, start_datetime=target_date, end_datetime=target_date,
+                 is_high_priority=False, is_completed=False, category=None))
+    repo.add(EventDTO(id=0, title="Inny dzień", description=None, start_datetime=other_date, end_datetime=other_date,
+                      is_high_priority=False, is_completed=False, category=None))
+
+    results = repo.query().for_date(target_date.date()).get_list()
+
+    assert len(results) == 1
+    assert results[0].title == "W dany dzień"
+
+
+def test_query_combined_filters_high_priority_and_overdue(db_session):
+    repo = SqlAlchemyEventRepository(db_session)
+    past_date = datetime.now() - timedelta(days=1)
+
+    repo.add(EventDTO(id=0, title="Zaległe zwykłe", description=None, start_datetime=past_date, end_datetime=past_date,
+                      is_high_priority=False, is_completed=False, category=None))
+    repo.add(EventDTO(id=0, title="Zaległe ważne", description=None, start_datetime=past_date, end_datetime=past_date,
+                      is_high_priority=True, is_completed=False, category=None))
+
+    results = repo.query().high_priority().overdue().get_list()
+
+    assert len(results) == 1
+    assert results[0].title == "Zaległe ważne"

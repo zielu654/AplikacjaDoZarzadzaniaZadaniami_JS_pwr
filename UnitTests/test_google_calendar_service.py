@@ -2,26 +2,21 @@ import json
 import datetime
 import pytest
 from unittest.mock import MagicMock, patch
-
+from googleapiclient.errors import HttpError
+import httplib2
 from Services.google_calendar_service import GoogleCalendarService
 from DTO.event_DTO import EventDTO
 from DTO.user_credentials_DTO import UserCredentialsDTO
 from Models.event import EventSource
-
+from Services.exceptions import GoogleEventNotFoundError, GoogleCalendarError
 
 @pytest.fixture
 def mock_repo():
-    """Tworzy atrapę repozytorium tokenów (IUserCredentialsRepository)."""
     return MagicMock()
 
 
 @pytest.fixture
 def google_service(mock_repo):
-    """
-    Tworzy serwis Google, odcinając proces autoryzacji (_authenticate),
-    dzięki czemu możemy testować metody add_event czy get_upcoming_events
-    bez dotykania internetu i bez otwierania przeglądarki.
-    """
     with patch.object(GoogleCalendarService, '_authenticate', return_value=MagicMock()):
         service = GoogleCalendarService(credentials_repository=mock_repo, current_user_id=1)
         return service
@@ -29,10 +24,6 @@ def google_service(mock_repo):
 @patch('Services.google_calendar_service.build')
 @patch('Services.google_calendar_service.Credentials')
 def test_authenticate_uses_valid_token_from_repository(mock_credentials_class, mock_build, mock_repo):
-    """
-    Sprawdza, czy jeśli w bazie jest zapisany poprawny token, _authenticate
-    użyje go i poprawnie zbuduje klienta API, zamiast prosić o logowanie.
-    """
     fake_token_json = json.dumps({"access_token": "tajny_access", "refresh_token": "tajny_refresh"})
     mock_repo.get_by_user_id.return_value = UserCredentialsDTO(user_id=1, token_data=fake_token_json)
 
@@ -53,7 +44,6 @@ def test_authenticate_uses_valid_token_from_repository(mock_credentials_class, m
 
 
 def test_map_dto_to_google_formats_dates_and_fields(google_service):
-    """Sprawdza, czy obiekt EventDTO jest prawidłowo tłumaczony na strukturę słownika Google."""
     start_dt = datetime.datetime(2026, 6, 21, 12, 0, 0)
     end_dt = datetime.datetime(2026, 6, 21, 13, 0, 0)
 
@@ -86,7 +76,6 @@ def test_map_dto_to_google_formats_dates_and_fields(google_service):
 
 
 def test_add_event_sends_insert_request_to_google(google_service):
-    """Sprawdza, czy metoda add_event wywołuje funkcję insert z odpowiednimi parametrami."""
     dto = EventDTO(
         id=None, title="Spotkanie", description=None,
         start_datetime=None, end_datetime=None, is_high_priority=False, is_completed=False
@@ -107,7 +96,6 @@ def test_add_event_sends_insert_request_to_google(google_service):
 
 
 def test_get_upcoming_events_returns_mapped_dtos(google_service):
-    """Sprawdza, czy pobrane z Google surowe słowniki JSON są poprawnie mapowane na listę obiektów EventDTO."""
     mock_google_response = {
         'items': [
             {
@@ -135,3 +123,95 @@ def test_get_upcoming_events_returns_mapped_dtos(google_service):
     assert event_dto.description == "Opis z chmury"
     assert event_dto.rrule_str == "FREQ=WEEKLY"
     assert event_dto.source == EventSource.GOOGLE
+
+
+def test_update_event_sends_put_request_to_google(google_service):
+    start_dt = datetime.datetime(2026, 6, 21, 10, 0)
+    end_dt = datetime.datetime(2026, 6, 21, 11, 0)
+    updated_dto = EventDTO(
+        id=None, title="Zaktualizowany Tytuł", description="Zmieniony opis",
+        start_datetime=start_dt, end_datetime=end_dt, is_high_priority=False, is_completed=False
+    )
+
+    mock_execute = MagicMock()
+    mock_update = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(update=mock_update)
+
+    google_service.update_event('google_id_777', updated_dto)
+
+    mock_update.assert_called_once()
+    _, kwargs = mock_update.call_args
+    assert kwargs['eventId'] == 'google_id_777'
+    assert kwargs['calendarId'] in ['primary', getattr(google_service, 'calendar_id', 'primary')]
+    assert kwargs['body']['summary'] == "Zaktualizowany Tytuł"
+
+
+def test_delete_event_sends_delete_request(google_service):
+    mock_execute = MagicMock()
+    mock_delete = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(delete=mock_delete)
+
+    google_service.delete_event('id_do_usuniecia_123')
+
+    mock_delete.assert_called_once()
+    _, kwargs = mock_delete.call_args
+    assert kwargs['eventId'] == 'id_do_usuniecia_123'
+
+
+def test_delete_event_raises_custom_error_on_404(google_service):
+    """Sprawdza, jak zachowa się serwis, jeśli spróbujemy usunąć wydarzenie, którego już nie ma (błąd 404)."""
+    fake_resp = httplib2.Response({'status': '404'})
+    fake_error = HttpError(fake_resp, b'Not Found')
+
+    mock_execute = MagicMock(side_effect=fake_error)
+    mock_delete = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(delete=mock_delete)
+
+
+    with pytest.raises(Exception) as excinfo:
+        google_service.delete_event('duchowe_id_999')
+
+    assert 'nie istnieje' in str(excinfo.value).lower() or 'not found' in str(excinfo.value).lower()
+
+
+def test_update_event_raises_custom_error_on_404(google_service):
+    fake_resp = httplib2.Response({'status': '404'})
+    fake_error = HttpError(fake_resp, b'Not Found')
+
+    mock_execute = MagicMock(side_effect=fake_error)
+    mock_update = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(update=mock_update)
+
+    dummy_dto = EventDTO(id=None, title="Test", description=None, start_datetime=datetime.datetime.now(),
+                         end_datetime=datetime.datetime.now(), is_high_priority=False, is_completed=False,
+                         category=None)
+
+    with pytest.raises(GoogleEventNotFoundError) as excinfo:
+        google_service.update_event('ghost_id_777', dummy_dto)
+
+    assert 'nie istnieje' in str(excinfo.value).lower() or 'not found' in str(excinfo.value).lower()
+
+
+def test_delete_event_raises_generic_calendar_error_on_403_forbidden(google_service):
+    fake_resp = httplib2.Response({'status': '403'})
+    fake_error = HttpError(fake_resp, b'Forbidden')
+
+    mock_execute = MagicMock(side_effect=fake_error)
+    mock_delete = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(delete=mock_delete)
+
+    with pytest.raises(GoogleCalendarError) as excinfo:
+        google_service.delete_event('some_id')
+
+    assert '403' in str(excinfo.value) or 'błąd http' in str(excinfo.value).lower()
+
+
+def test_network_failure_raises_google_calendar_error(google_service):
+    mock_execute = MagicMock(side_effect=ConnectionError("Brak połączenia z siecią"))
+    mock_delete = MagicMock(return_value=MagicMock(execute=mock_execute))
+    google_service.service.events.return_value = MagicMock(delete=mock_delete)
+
+    with pytest.raises(GoogleCalendarError) as excinfo:
+        google_service.delete_event('some_id')
+
+    assert 'nieoczekiwany błąd' in str(excinfo.value).lower()

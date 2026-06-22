@@ -1,5 +1,4 @@
 from datetime import datetime
-from email.policy import default
 from typing import Optional, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from Models.base import Base
@@ -14,5 +13,5 @@ class UserCredentials(Base):
 
     token_data: Mapped[str] = mapped_column(default="")
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(default_factory=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(default_factory=datetime.now, onupdate=datetime.now)

@@ -74,6 +74,9 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
 
     @db_error_handler
     def get_by_id(self, category_id: int) -> Optional[CategoryDTO]:
+        if not category_id:
+            return None
+
         category = self.session.get(Category, category_id)
 
         if not category or category.is_deleted:
