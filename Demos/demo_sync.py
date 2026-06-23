@@ -34,9 +34,8 @@ def run_sync_demo():
     google_service = GoogleCalendarService(cred_repo, current_user_id=1, credentials_path="../Secrets/credentials.json")
     auth_ctrl = AuthController(google_service, cred_repo, current_user_id=1)
 
-    mediator = SyncMediator(google_service)
+    mediator = SyncMediator(google_service, ev_repo, cred_repo)
     event_ctrl = EventController(ev_repo, cat_repo, mediator)
-    mediator.set_controllers(event_ctrl, auth_ctrl)
 
     if not auth_ctrl.is_logged_in():
         print(" -> Użytkownik nie jest zalogowany (zrób to w pierwszym skrypcie).")

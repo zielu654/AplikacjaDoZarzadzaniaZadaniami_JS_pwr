@@ -40,12 +40,10 @@ def run_demo():
 
     auth_ctrl = AuthController(google_service, cred_repo, current_user_id=1)
 
-    mediator = SyncMediator(google_service)
+    mediator = SyncMediator(google_service, ev_repo, cred_repo)
 
     event_ctrl = EventController(ev_repo, cat_repo, mediator)
     cat_ctrl = CategoryController(cat_repo, ev_repo)
-
-    mediator.set_controllers(event_ctrl, auth_ctrl)
 
     print("\n[1] Logowanie do Google Calendar...")
     if not auth_ctrl.is_logged_in():
