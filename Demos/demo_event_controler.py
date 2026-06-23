@@ -2,10 +2,9 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from Models.base import Base
-from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
-from Controllers.event_controller import EventController
+from Models import Base
+from DatabaseSqlAlchemy import SqlAlchemyEventRepository, SqlAlchemyCategoryRepository
+from Controllers import EventController
 
 
 def print_events(title: str, events: list):

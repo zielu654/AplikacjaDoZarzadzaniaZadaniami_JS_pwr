@@ -1,10 +1,8 @@
 from datetime import datetime
 from typing import Optional, Dict
 
-from Core.exceptions import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError
-from DTO.eventDTO import EventDTO
-from Core.interfaces import IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery
-from Models.event import EventSource
+from Core import ResourceNotFoundError, InvalidDateRangeError, EmptyFieldError, IEventRepository, ICategoryRepository, ISyncMediator, IEventQuery, EventSource
+from DTO import EventDTO
 
 
 class EventController:

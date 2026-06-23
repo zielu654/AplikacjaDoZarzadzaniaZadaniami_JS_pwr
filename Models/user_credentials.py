@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Text
 from sqlalchemy.orm import Mapped, mapped_column
-from Models.base import Base
+from Models import Base
 
 
 class UserCredentials(Base):

@@ -4,13 +4,9 @@ from datetime import timedelta, datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from Controllers.auth_controller import AuthController
-from Controllers.event_controller import EventController
-from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
-from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
-from Services.google_calendar_service import GoogleCalendarService
-from Services.sync_mediator import SyncMediator
+from Controllers import EventController, AuthController
+from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository, SqlAlchemyEventRepository, SqlAlchemyUserCredentialsRepository
+from Services.google_calendar_service import GoogleCalendarService, SyncMediator
 
 DB_PATH = "demo_test.db"
 

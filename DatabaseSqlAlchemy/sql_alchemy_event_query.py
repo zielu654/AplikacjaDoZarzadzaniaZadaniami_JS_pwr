@@ -2,10 +2,9 @@ from typing import List
 from datetime import datetime, date, time
 from sqlalchemy.orm import Session
 
-from DTO.categoryDTO import CategoryDTO
-from DTO.eventDTO import EventDTO
-from Core.interfaces import IEventQuery
-from Models.event import Event
+from DTO import CategoryDTO, EventDTO
+from Core import IEventQuery
+from Models import Event
 
 
 class SqlAlchemyEventQuery(IEventQuery):

@@ -1,9 +1,10 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from datetime import date, datetime
 from typing import Protocol, List, Optional
 
-from DTO.categoryDTO import CategoryDTO
-from DTO.eventDTO import EventDTO
-from DTO.user_credentialsDTO import UserCredentialsDTO
+if TYPE_CHECKING:
+    from DTO import CategoryDTO, EventDTO, UserCredentialsDTO
 
 
 class IEventQuery(Protocol):

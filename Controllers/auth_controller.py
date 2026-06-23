@@ -2,8 +2,8 @@ import json
 from datetime import datetime
 from typing import Optional
 
-from Core.interfaces import IUserCredentialsRepository
-from Services.google_calendar_service import GoogleCalendarService
+from Core import IUserCredentialsRepository
+from Services import GoogleCalendarService
 from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 

@@ -3,15 +3,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from DTO.eventDTO import EventDTO
-from DTO.user_credentialsDTO import UserCredentialsDTO
-from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
-from Models.sync_metadata import SyncMetadata
-from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from Models.base import Base
-from Models.event import Event
-from Core.exceptions import RecordNotFoundError
-from Models.user_credentials import UserCredentials
+from DTO import EventDTO, UserCredentialsDTO
+from DatabaseSqlAlchemy import SqlAlchemyUserCredentialsRepository, SqlAlchemyEventRepository
+from Models import Base, Event, SyncMetadata, UserCredentials
+from Core import RecordNotFoundError
 
 
 @pytest.fixture

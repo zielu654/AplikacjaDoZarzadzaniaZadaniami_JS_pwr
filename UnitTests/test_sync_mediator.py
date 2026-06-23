@@ -2,8 +2,7 @@ import datetime
 import pytest
 from unittest.mock import MagicMock
 
-from DTO.eventDTO import EventDTO
-from DTO.deleted_google_eventDTO import DeletedGoogleEventDTO
+from DTO import EventDTO, DeletedGoogleEventDTO
 
 
 @pytest.fixture

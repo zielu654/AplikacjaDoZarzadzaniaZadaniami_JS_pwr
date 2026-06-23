@@ -1,9 +1,8 @@
 import datetime
 
-from Core.interfaces import ISyncMediator, IEventRepository, IUserCredentialsRepository
-from DTO.deleted_google_eventDTO import DeletedGoogleEventDTO
-from DTO.eventDTO import EventDTO
-from Services.google_calendar_service import GoogleCalendarService
+from Core import ISyncMediator, IEventRepository, IUserCredentialsRepository
+from DTO import DeletedGoogleEventDTO, EventDTO
+from Services import GoogleCalendarService
 
 
 class SyncMediator(ISyncMediator):

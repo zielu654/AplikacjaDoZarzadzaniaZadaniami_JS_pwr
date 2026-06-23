@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from DTO.categoryDTO import CategoryDTO
-from Models.event import EventSource
+from DTO import CategoryDTO
+from Core import EventSource
 
 
 @dataclass

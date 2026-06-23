@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import List, Optional
 
-from DTO.categoryDTO import CategoryDTO
-from Models.category import Category
-from Core.interfaces import ICategoryRepository
-from Core.exceptions import RecordAlreadyExistsError, db_error_handler, RecordNotFoundError
+from DTO import CategoryDTO
+from Models import Category
+from Core import RecordAlreadyExistsError, db_error_handler, RecordNotFoundError, ICategoryRepository
 
 
 class SqlAlchemyCategoryRepository(ICategoryRepository):

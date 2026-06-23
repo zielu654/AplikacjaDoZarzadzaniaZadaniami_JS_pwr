@@ -1,22 +1,17 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
 from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from Models.base import Base
-from Models.category import Category
+
+from Core import EventSource
+from Models import Base, Category
 
 if TYPE_CHECKING:
     from Models.recurrence_rule import RecurrenceRule
     from Models.sync_metadata import SyncMetadata
-
-
-class EventSource(Enum):
-    LOCAL = "local"
-    GOOGLE = "google"
 
 
 class Event(Base):

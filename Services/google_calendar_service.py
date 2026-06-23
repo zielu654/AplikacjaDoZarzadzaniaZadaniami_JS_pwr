@@ -8,12 +8,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from Core.exceptions import GoogleAuthError, GoogleEventNotFoundError, GoogleCalendarError
-from DTO.deleted_google_eventDTO import DeletedGoogleEventDTO
-from DTO.eventDTO import EventDTO
-from DTO.user_credentialsDTO import UserCredentialsDTO
-from Core.interfaces import IUserCredentialsRepository
-from Models.event import EventSource
+from Core import GoogleAuthError, GoogleEventNotFoundError, GoogleCalendarError, IUserCredentialsRepository, EventSource
+from DTO import DeletedGoogleEventDTO, EventDTO, UserCredentialsDTO
 
 
 class GoogleCalendarService:

@@ -4,19 +4,13 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from Models.base import Base
-from Models.event import Event
-from Models.category import Category
-from Models.sync_metadata import SyncMetadata
-from Models.user_credentials import UserCredentials
-from Models.recurrence_rule import RecurrenceRule
+from Models.base import Base, Event, Category, SyncMetadata, UserCredentials, RecurrenceRule
 
-from DTO.categoryDTO import CategoryDTO
-from DTO.eventDTO import EventDTO
+from DTO import CategoryDTO, EventDTO
 
-from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
-from Models.category import CalendarColor
-from Services.google_calendar_service import GoogleCalendarService
+from DatabaseSqlAlchemy import SqlAlchemyUserCredentialsRepository
+from Models import CalendarColor
+from Services import GoogleCalendarService
 
 
 def run_demo():

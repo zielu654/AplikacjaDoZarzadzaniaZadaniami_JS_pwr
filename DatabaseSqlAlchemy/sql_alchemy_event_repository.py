@@ -3,13 +3,10 @@ from typing import List, Optional
 
 from sqlalchemy import func
 
-from DTO.eventDTO import EventDTO
-from DatabaseSqlAlchemy.sql_alchemy_event_query import SqlAlchemyEventQuery
-from Models.recurrence_rule import RecurrenceRule
-from Models.sync_metadata import SyncMetadata
-from Core.interfaces import IEventRepository
-from Models.event import Event
-from Core.exceptions import RecordNotFoundError, db_error_handler
+from DTO import EventDTO
+from DatabaseSqlAlchemy import SqlAlchemyEventQuery
+from Models import RecurrenceRule, SyncMetadata, Event
+from Core import IEventRepository, RecordNotFoundError, db_error_handler
 
 
 class SqlAlchemyEventRepository(IEventRepository):

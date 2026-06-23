@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from Models.base import Base
+from Models import Base
 from sqlalchemy import ForeignKey
 
 if TYPE_CHECKING:

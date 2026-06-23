@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
-from Models.category import CalendarColor
-
+from Core import CalendarColor
 
 @dataclass
 class CategoryDTO:

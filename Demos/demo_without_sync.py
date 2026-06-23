@@ -2,11 +2,9 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from Models.base import Base
-from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
-from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from Controllers.category_controller import CategoryController
-from Controllers.event_controller import EventController
+from Models import Base
+from DatabaseSqlAlchemy import SqlAlchemyCategoryRepository, SqlAlchemyEventRepository
+from Controllers import CategoryController, EventController
 
 
 def run_demo():

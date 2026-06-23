@@ -1,9 +1,7 @@
 from typing import List, Optional, Dict
 
-from Core.exceptions import EmptyFieldError, ValidationError
-from DTO.categoryDTO import CategoryDTO
-from Core.interfaces import ICategoryRepository, IEventRepository
-from Models.category import CalendarColor
+from Core import EmptyFieldError, ValidationError, ICategoryRepository, IEventRepository, CalendarColor
+from DTO import CategoryDTO
 
 
 class CategoryController:

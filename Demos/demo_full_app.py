@@ -3,15 +3,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from Models.base import Base
-from DatabaseSqlAlchemy.sql_alchemy_category_repository import SqlAlchemyCategoryRepository
-from DatabaseSqlAlchemy.sql_alchemy_event_repository import SqlAlchemyEventRepository
-from DatabaseSqlAlchemy.sql_alchemy_user_credentials_repository import SqlAlchemyUserCredentialsRepository
-from Controllers.category_controller import CategoryController
-from Controllers.event_controller import EventController
-from Controllers.auth_controller import AuthController
-from Services.google_calendar_service import GoogleCalendarService
-from Services.sync_mediator import SyncMediator
+from DatabaseSqlAlchemy import SqlAlchemyEventRepository, SqlAlchemyCategoryRepository, SqlAlchemyUserCredentialsRepository
+from Models import Base
+from Controllers import CategoryController, EventController, AuthController
+from Services import GoogleCalendarService, SyncMediator
 
 DB_PATH = "demo_test.db"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
