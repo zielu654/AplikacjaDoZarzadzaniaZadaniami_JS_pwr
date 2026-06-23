@@ -61,3 +61,7 @@ Aplikacja jest dokładnie przetestowana. Z głównego folderu uruchom testy za p
 ```bash
 python -m pytest UnitTests
 ```
+
+### 4. Github
+https://github.com/zielu654/AplikacjaDoZarzadzaniaZadaniami_JS_pwr
+```
