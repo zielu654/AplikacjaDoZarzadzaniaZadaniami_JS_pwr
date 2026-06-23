@@ -11,7 +11,6 @@ Styl wierszy: 'outlined' (kolorowa ramka, biale tlo).
 
 from front.views.base import ListView
 
-
 # Opcje toolbara wg szkicow - na razie tylko stringi do wyswietlenia
 SORT_OPTIONS = ["Data", "Priorytet", "Kategorie"]
 FILTER_OPTIONS = ["Priorytet", "Kategoria", "Status", "Data"]
@@ -29,10 +28,9 @@ class NawykiView(ListView):
       on_task_menu   - klik "..." na zadaniu
     """
 
-    def __init__(self, parent, repository,
-                 on_add=None,
-                 on_sort=None, on_filter=None,
-                 on_toggle_task=None, on_task_menu=None):
+    def __init__(
+        self, parent, repository, on_add=None, on_sort=None, on_filter=None, on_toggle_task=None, on_task_menu=None
+    ):
         tasks = repository.get_habits()
         super().__init__(
             parent,

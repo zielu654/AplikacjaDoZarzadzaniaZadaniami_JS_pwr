@@ -14,7 +14,6 @@ from front.sidebar import Sidebar
 from front.views.nawyki import NawykiView
 from fake_data import FakeTaskRepository
 
-
 # proporcje window: 30% sidebar, 50% widok, 20% margines z prawej
 SEPARATOR_RELX = LEFT_RELWIDTH
 
@@ -43,6 +42,7 @@ body.pack(side="top", fill="both", expand=True)
 # ============================================================
 # Callbacki (na razie wszystkie puste)
 # ============================================================
+
 
 def on_dodaj_zadanie():
     """Klik na 'Dodaj zadanie' / '+' w sidebarze.

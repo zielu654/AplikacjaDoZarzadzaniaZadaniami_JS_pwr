@@ -8,19 +8,22 @@ from Models.event import EventSource
 
 
 class EventController:
-    def __init__(
-        self,
-        event_repo: IEventRepository,
-        category_repo: ICategoryRepository,
-        sync_mediator: ISyncMediator
-    ):
+    def __init__(self, event_repo: IEventRepository, category_repo: ICategoryRepository, sync_mediator: ISyncMediator):
         self._event_repo = event_repo
         self._category_repo = category_repo
         self._sync_mediator = sync_mediator
 
-    def create_new_event(self, title: str, description: str, category_id: Optional[int],
-                         start_datetime: Optional[datetime] = None, end_datetime: Optional[datetime] = None,
-                         priority: bool = False, rrule: Optional[str] = None, source: EventSource = EventSource.LOCAL) -> int:
+    def create_new_event(
+        self,
+        title: str,
+        description: str,
+        category_id: Optional[int],
+        start_datetime: Optional[datetime] = None,
+        end_datetime: Optional[datetime] = None,
+        priority: bool = False,
+        rrule: Optional[str] = None,
+        source: EventSource = EventSource.LOCAL,
+    ) -> int:
         """Tworzy nowe zadanie, waliduje i zapisuje."""
         if not title or not title.strip():
             raise EmptyFieldError("Tytuł wydarzenia nie może być pusty!")
@@ -43,7 +46,7 @@ class EventController:
             is_completed=False,
             category=self._category_repo.get_by_id(category_id),
             rrule_str=rrule,
-            source=source
+            source=source,
         )
 
         return self._event_repo.add(new_event)
@@ -58,24 +61,24 @@ class EventController:
         if not event:
             raise ResourceNotFoundError(f"Nie można edytować. Zadanie o ID {event_id} nie istnieje.")
 
-        if 'title' in updates:
-            new_title = updates['title']
+        if "title" in updates:
+            new_title = updates["title"]
             if not new_title or not str(new_title).strip():
                 raise EmptyFieldError("Tytuł wydarzenia nie może być pusty!")
             event.title = str(new_title).strip()
 
-        if 'description' in updates:
-            new_description = updates['description']
+        if "description" in updates:
+            new_description = updates["description"]
             event.description = str(new_description).strip() if new_description else None
 
-        if 'priority' in updates:
-            event.is_high_priority = bool(updates['priority'])
+        if "priority" in updates:
+            event.is_high_priority = bool(updates["priority"])
 
-        if 'is_completed' in updates:
-            event.is_completed = bool(updates['is_completed'])
+        if "is_completed" in updates:
+            event.is_completed = bool(updates["is_completed"])
 
-        if 'category_id' in updates:
-            cat_id = updates['category_id']
+        if "category_id" in updates:
+            cat_id = updates["category_id"]
             if cat_id is not None:
                 found_category = self._category_repo.get_by_id(cat_id)
                 if not found_category:
@@ -84,19 +87,19 @@ class EventController:
             event.category_id = cat_id
             event.category = None
 
-        new_start = updates.get('start_dt', event.start_datetime)
-        new_end = updates.get('end_dt', event.end_datetime)
+        new_start = updates.get("start_dt", event.start_datetime)
+        new_end = updates.get("end_dt", event.end_datetime)
 
         if new_start and new_end and new_end < new_start:
             raise InvalidDateRangeError("Data zakończenia nie może być wcześniejsza niż rozpoczęcia!")
 
-        if 'start_dt' in updates:
-            event.start_datetime = updates['start_dt']
-        if 'end_dt' in updates:
-            event.end_datetime = updates['end_dt']
+        if "start_dt" in updates:
+            event.start_datetime = updates["start_dt"]
+        if "end_dt" in updates:
+            event.end_datetime = updates["end_dt"]
 
-        if 'rrule_string' in updates:
-            event.rrule_str = updates['rrule_string']
+        if "rrule_string" in updates:
+            event.rrule_str = updates["rrule_string"]
 
         self._event_repo.update(event)
 
@@ -155,7 +158,7 @@ class EventController:
 
     def sync_update_metadata(self, event_id: int, google_id: str, sync_time: datetime) -> None:
         """Aktualizuje tylko metadane synchronizacji (np. po wypchnięciu nowego eventu do Google)"""
-        if hasattr(self._event_repo, 'update_sync_metadata'):
+        if hasattr(self._event_repo, "update_sync_metadata"):
             self._event_repo.update_sync_metadata(event_id, google_id, sync_time)
         else:
             event = self._event_repo.get_by_id(event_id)
@@ -164,7 +167,7 @@ class EventController:
                 self._event_repo.update(event)
 
     def sync_hard_delete(self, event_id: int) -> None:
-        if hasattr(self._event_repo, 'hard_delete'):
+        if hasattr(self._event_repo, "hard_delete"):
             self._event_repo.hard_delete(event_id)
         else:
             self._event_repo.delete(event_id)

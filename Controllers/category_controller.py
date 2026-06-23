@@ -7,7 +7,7 @@ from Models.category import CalendarColor
 
 
 class CategoryController:
-    def __init__(self, category_repo: ICategoryRepository, event_repo: IEventRepository ) -> None:
+    def __init__(self, category_repo: ICategoryRepository, event_repo: IEventRepository) -> None:
         self._category_repo = category_repo
         self._event_repo = event_repo
 
@@ -19,14 +19,11 @@ class CategoryController:
         mapped_color = CalendarColor.color_hex_to_callendarColor(color_hex)
         valid_hexes = [member.value[1] for member in CalendarColor]
         if color_hex not in valid_hexes:
-            raise ValidationError(f"Kolor HEX '{color_hex}' nie pasuje do żadnego z dozwolonych kolorów Google Calendar!")
+            raise ValidationError(
+                f"Kolor HEX '{color_hex}' nie pasuje do żadnego z dozwolonych kolorów Google Calendar!"
+            )
 
-        new_category = CategoryDTO(
-            id=0,
-            name=name.strip(),
-            color=mapped_color,
-            sync_enabled=is_syncable
-        )
+        new_category = CategoryDTO(id=0, name=name.strip(), color=mapped_color, sync_enabled=is_syncable)
         return self._category_repo.add(new_category)
 
     def edit_category(self, category_id: int, updates: Dict) -> None:
@@ -39,25 +36,24 @@ class CategoryController:
         if not category:
             raise ValueError(f"Kategoria o ID {category_id} nie istnieje!")
 
-        if 'name' in updates:
-            new_name = updates['name']
+        if "name" in updates:
+            new_name = updates["name"]
             if not new_name or not str(new_name).strip():
                 raise ValueError("Nazwa kategorii nie może być pusta!")
             category.name = str(new_name).strip()
 
-        if 'color_hex' in updates:
-            if all(color.hex_code != updates['color_hex'] for color in CalendarColor):
+        if "color_hex" in updates:
+            if all(color.hex_code != updates["color_hex"] for color in CalendarColor):
                 raise ValidationError("Niepoprawny kolor!")
-            category.color = CalendarColor.color_hex_to_callendarColor(updates['color_hex'])
+            category.color = CalendarColor.color_hex_to_callendarColor(updates["color_hex"])
 
-
-        if 'color_name' in updates:
-            if all(color.name != updates['color_name'] for color in CalendarColor):
+        if "color_name" in updates:
+            if all(color.name != updates["color_name"] for color in CalendarColor):
                 raise ValidationError("Niepoprawny kolor!")
-            category.color = CalendarColor.color_name_to_callendarColor(updates['color_name'])
+            category.color = CalendarColor.color_name_to_callendarColor(updates["color_name"])
 
-        if 'is_syncable' in updates:
-            category.sync_enabled = bool(updates['is_syncable'])
+        if "is_syncable" in updates:
+            category.sync_enabled = bool(updates["is_syncable"])
 
         self._category_repo.update(category)
 

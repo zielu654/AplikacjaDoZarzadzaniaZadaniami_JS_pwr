@@ -39,7 +39,7 @@ def run_tests():
         description="Omówienie architektury",
         category_id=None,
         start_dt=now + timedelta(days=1),
-        priority=True
+        priority=True,
     )
 
     controller.create_new_event(
@@ -48,7 +48,7 @@ def run_tests():
         category_id=None,
         start_dt=now - timedelta(days=1),
         end_dt=now - timedelta(hours=20),
-        priority=False
+        priority=False,
     )
 
     controller.create_new_event(
@@ -56,7 +56,7 @@ def run_tests():
         description="Przegląd",
         category_id=None,
         start_dt=now + timedelta(days=7),
-        priority=False
+        priority=False,
     )
 
     controller.create_new_event(
@@ -64,7 +64,7 @@ def run_tests():
         description="Wycena projektu",
         category_id=None,
         start_dt=now + timedelta(hours=2),
-        priority=True
+        priority=True,
     )
 
     wszystkie = controller.build_query().sort_by("start_datetime", ascending=True).get_list()

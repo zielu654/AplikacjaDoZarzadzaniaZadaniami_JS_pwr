@@ -40,7 +40,7 @@ def run_demo():
         category_id=cat_work_id,
         start_dt=now,
         end_dt=now + timedelta(hours=2),
-        priority=True
+        priority=True,
     )
 
     # ev2 tworzymy od razu z regułą powtarzania co tydzień (rrule)
@@ -50,13 +50,11 @@ def run_demo():
         category_id=cat_work_id,
         start_dt=now + timedelta(days=1),
         end_dt=now + timedelta(days=1, hours=1),
-        rrule="FREQ=WEEKLY"
+        rrule="FREQ=WEEKLY",
     )
 
     ev3_id = event_ctrl.create_new_event(
-        title="Wielkie sprzątanie",
-        description="Kupić płyn do okien",
-        category_id=cat_home_id
+        title="Wielkie sprzątanie", description="Kupić płyn do okien", category_id=cat_home_id
     )
     print(" ✅ Dodano 3 nowe wydarzenia (w tym jedno cykliczne).")
 
