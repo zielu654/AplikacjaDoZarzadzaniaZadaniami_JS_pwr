@@ -130,30 +130,27 @@ W przypadku, gdy od czasu ostatniej udanej synchronizacji ten sam obiekt został
 
 ---
 
-### 5. Struktura Bazy Danych i Encji
+## 5. Struktura Bazy Danych i Encji
 
-Modele bazy danych odzwierciedlone w repozytoriach posiadają następującą strukturę powiązań relacyjnych:
+Modele bazy danych zdefiniowane w katalogu `/Models/` zostały zaimplementowane przy użyciu nowoczesnego mapowania deklaratywnego w SQLAlchemy i posiadają następującą strukturę oraz powiązania relacyjne:
 
-* **`UserCredentials`**: Przechowuje zautoryzowane struktury sesji OAuth dla poszczególnych użytkowników w formie zserializowanego obiektu JSON w polu tekstowym (`token_data`), wraz z polem `last_synced` (DateTime).
-* **`Category`**: Zawiera nazwę, unikalny kolor mapowany przez klasę `Enum` oraz flagę bezpieczeństwa `sync_enabled`. Wyłączenie tej flagi powoduje, że mediator ignoruje wszelkie zadania należące do tej kategorii podczas przebiegu synchronizacji.
-* **`Event`**: Główna encja przechowująca parametry zadania. Posiada relacje typu jeden-do-jednego z:
-  * **`RecurrenceRule`** – przechowuje ciąg tekstowy zgodny ze standardem iCalendar RFC 5545 (RRULE), umożliwiający cykliczne powtarzanie zadań.
-  * **`SyncMetadata`** – tabela przechowująca `google_event_id` oraz timestamp ostatniej synchronizacji danego wiersza.
+* **`UserCredentials(id:Optional[int], user_id:int, token_data:str, last_synced:Optional[datetime], created_at:datetime, updated_at:datetime)`**
+  Przechowuje zautoryzowane dane sesji OAuth dla poszczególnych użytkowników systemu. Unikalny identyfikator `user_id` zapewnia jednoznaczność wpisów, podczas gdy zserializowana struktura tokenów trafia do pola tekstowego `token_data`. Tabela zarządza również czasem ostatniej synchronizacji (`last_synced`) oraz metadanymi czasu utworzenia i modyfikacji rekordu (`created_at`, `updated_at`).
+
+* **`Category(id:Optional[int], name:str, color:CalendarColor, sync_enabled:bool, is_deleted:bool, updated_at:datetime)`**
+  Zawiera unikalną nazwę kategorii (`name`) oraz flagę bezpieczeństwa `sync_enabled` (wyłączenie tej flagi powoduje, że mediator ignoruje zadania należące do tej kategorii). Pole `color` wykorzystuje zaawansowany enum `CalendarColor`, który mapuje kolory aplikacji na identyfikatory (ID) oraz kody HEX natywnie obsługiwane przez Google Calendar. Tabela implementuje mechanizm miękkiego usuwania poprzez flagi `is_deleted` i `updated_at`.
+
+* **`Event(id:Optional[int], category_id:Optional[int], category:Optional[Category], title:str, description:str, start_datetime:Optional[datetime], end_datetime:Optional[datetime], is_completed:bool, is_high_priority:bool, is_deleted:bool, created_at:Optional[datetime], updated_at:Optional[datetime], source:EventSource, recurrence_rule:Optional[RecurrenceRule], sync_metadata:Optional[SyncMetadata])`**
+  Główna encja przechowująca parametry zadania (m.in. `title`, `description`, flagi `is_completed`, `is_high_priority` oraz ramy czasowe `start_datetime` i `end_datetime`). Pole `source` (`EventSource`) określa pochodzenie rekordu (`LOCAL` / `GOOGLE`). Posiada relację wiele-do-jednego z encją `Category` za pomocą opcjonalnego klucza obcego `category_id`. Ponadto definiuje dwie ścisłe relacje jeden-do-jednego z automatycznym usuwaniem kaskadowym (`cascade="all, delete-orphan"`):
+
+* **`RecurrenceRule(id:Optional[int], event_id:Optional[int], event:Optional[Event], rrule_string:str)`**
+  Odpowiada za powtarzalność zadań. Przechowuje ciąg tekstowy `rrule_string` zgodny ze specyfikacją standardu iCalendar RFC 5545. Powiązanie z tabelą zdarzeń realizowane jest przez unikalny klucz obcy `event_id` z regułą kaskadową na poziomie bazy danych (`ondelete="CASCADE"`).
+
+* **`SyncMetadata(event_id:int, google_event_id:str, last_synced:Optional[datetime], event:Event)`**
+  Kluczowa tabela pomocnicza dla procesów synchronizacji. Przechowuje zewnętrzny identyfikator zasobu w chmurze (`google_event_id`) oraz dokładny znacznik czasu `last_synced`. Relacja opiera się na polu `event_id`, które pełni tu potrójną rolę: klucza głównego (PK), klucza obcego (FK) oraz gwaranta relacji jeden-do-jednego.
 
 ---
-
-### 6. Instrukcja Rozbudowy Projektu
-
-Projekt ściśle przestrzega zasad SOLID, co ułatwia jego modyfikację i rozwijanie bez ryzyka regresji kodu.
-
-**Jak podmienić bazę danych z SQLite na PostgreSQL?**
-Dzięki separacji interfejsów w warstwie Core, proces ten nie wymaga modyfikacji kontrolerów ani serwisów:
-1. Utwórz nowy pakiet infrastruktury, np. `/DatabasePostgresql/`.
-2. Zaimplementuj klasy repozytoriów (np. `PostgresEventRepository`), dziedziczące po odpowiednich protokołach z `Core.interfaces`.
-3. W miejscu inicjalizacji aplikacji (skrypt startowy / kontener Dependency Injection) zamień wstrzykiwane instancje repozytoriów SQLite na nowe repozytoria PostgreSQL.
-
-**Jak dodać nowe reguły biznesowe dla zadań?**
-Wszelkie reguły biznesowe, walidacje i ograniczenia (np. maksymalna długość znaków w tytule, zablokowanie możliwości tworzenia zadań z datą przeszłą) powinny być dodawane wyłącznie w klasie `EventController` w metodach `create_new_event` oraz `edit_event`. Pozwala to na zachowanie czystości kodu infrastrukturalnego.
+### 6. Testy
 
 **Jak uruchomić testy jednostkowe?**
 Wszystkie komponenty posiadają przygotowane mocki interfejsów. Testy sprawdzają poprawność izolacji warstw i algorytmu LWW. Wywołaj komendę w terminalu:
