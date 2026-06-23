@@ -12,14 +12,15 @@ na zadaniu. W sidebarze "Priorytetowe" to filtr-pseudokategoria pokazujaca
 zadania z dowolnej kategorii z priority=True, kolor czerwony hardcoded
 w theme.PRIORYTETOWE_COLOR.
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 
-
 # ============================================================
 # MODELE DOMENOWE
 # ============================================================
+
 
 @dataclass
 class Category:
@@ -35,8 +36,8 @@ class Task:
     description: str
     due_date: datetime
     is_done: bool
-    priority: bool                     # NIE kategoria - patrz uwaga wyzej
-    category_id: Optional[int]         # None = "Bez Kategorii"
+    priority: bool  # NIE kategoria - patrz uwaga wyzej
+    category_id: Optional[int]  # None = "Bez Kategorii"
     created_at: datetime
     modified_at: datetime
     is_deleted: bool = False
@@ -62,74 +63,142 @@ FAKE_CATEGORIES = {
 
 FAKE_TASKS = [
     # Cykliczne (nawyki)
-    Task(id=1, title="Poranny trening", description="30 minut biegania",
-         due_date=datetime(2026, 6, 19, 7, 0), is_done=False, priority=False,
-         category_id=2, created_at=datetime(2026, 6, 1, 9, 0),
-         modified_at=datetime(2026, 6, 1, 9, 0),
-         recurrence_rule="co dzien 7:00-7:30"),
-
-    Task(id=5, title="Sprzatanie", description="",
-         due_date=datetime(2026, 6, 22, 18, 0), is_done=False, priority=False,
-         category_id=2, created_at=datetime(2026, 5, 1, 10, 0),
-         modified_at=datetime(2026, 5, 1, 10, 0),
-         recurrence_rule="co pon 18:00-19:00"),
-
-    Task(id=10, title="Mycie samochodu", description="",
-         due_date=datetime(2026, 6, 21, 11, 0), is_done=False, priority=False,
-         category_id=3, created_at=datetime(2026, 5, 1, 10, 0),
-         modified_at=datetime(2026, 5, 1, 10, 0),
-         recurrence_rule="co dr niedz 11:00-11:30"),
-
+    Task(
+        id=1,
+        title="Poranny trening",
+        description="30 minut biegania",
+        due_date=datetime(2026, 6, 19, 7, 0),
+        is_done=False,
+        priority=False,
+        category_id=2,
+        created_at=datetime(2026, 6, 1, 9, 0),
+        modified_at=datetime(2026, 6, 1, 9, 0),
+        recurrence_rule="co dzien 7:00-7:30",
+    ),
+    Task(
+        id=5,
+        title="Sprzatanie",
+        description="",
+        due_date=datetime(2026, 6, 22, 18, 0),
+        is_done=False,
+        priority=False,
+        category_id=2,
+        created_at=datetime(2026, 5, 1, 10, 0),
+        modified_at=datetime(2026, 5, 1, 10, 0),
+        recurrence_rule="co pon 18:00-19:00",
+    ),
+    Task(
+        id=10,
+        title="Mycie samochodu",
+        description="",
+        due_date=datetime(2026, 6, 21, 11, 0),
+        is_done=False,
+        priority=False,
+        category_id=3,
+        created_at=datetime(2026, 5, 1, 10, 0),
+        modified_at=datetime(2026, 5, 1, 10, 0),
+        recurrence_rule="co dr niedz 11:00-11:30",
+    ),
     # Nawyk priorytetowy - testuje czy ramka jest czerwona zamiast koloru kategorii
-    Task(id=11, title="Codzienna medytacja", description="",
-         due_date=datetime(2026, 6, 19, 22, 0), is_done=False, priority=True,
-         category_id=2, created_at=datetime(2026, 5, 1, 10, 0),
-         modified_at=datetime(2026, 5, 1, 10, 0),
-         recurrence_rule="co dzien 22:00-22:15"),
-
+    Task(
+        id=11,
+        title="Codzienna medytacja",
+        description="",
+        due_date=datetime(2026, 6, 19, 22, 0),
+        is_done=False,
+        priority=True,
+        category_id=2,
+        created_at=datetime(2026, 5, 1, 10, 0),
+        modified_at=datetime(2026, 5, 1, 10, 0),
+        recurrence_rule="co dzien 22:00-22:15",
+    ),
     # Jednorazowe (NIE nawyki - pokazuja sie tylko w Wszystkie/Kategoria, nie w Nawykach)
-    Task(id=2, title="Spotkanie z zespolem", description="Omowienie postepow",
-         due_date=datetime(2026, 6, 19, 10, 0), is_done=False, priority=True,
-         category_id=1, created_at=datetime(2026, 6, 10, 12, 0),
-         modified_at=datetime(2026, 6, 17, 8, 30)),
-
-    Task(id=3, title="Kupic prezent", description="",
-         due_date=datetime(2026, 6, 20, 0, 0), is_done=False, priority=False,
-         category_id=3, created_at=datetime(2026, 6, 15, 14, 0),
-         modified_at=datetime(2026, 6, 15, 14, 0)),
-
-    Task(id=4, title="Wyslac raport", description="",
-         due_date=datetime(2026, 6, 18, 16, 0), is_done=True, priority=False,
-         category_id=1, created_at=datetime(2026, 6, 10, 9, 0),
-         modified_at=datetime(2026, 6, 18, 16, 5)),
-
-    Task(id=6, title="Zadzwonic do mamy", description="",
-         due_date=datetime(2026, 6, 19, 19, 0), is_done=False, priority=False,
-         category_id=None, created_at=datetime(2026, 6, 19, 8, 0),
-         modified_at=datetime(2026, 6, 19, 8, 0)),
-
-    Task(id=7, title="Oddac ksiazki do biblioteki", description="",
-         due_date=datetime(2026, 6, 15, 17, 0), is_done=False, priority=True,
-         category_id=3, created_at=datetime(2026, 6, 5, 11, 0),
-         modified_at=datetime(2026, 6, 5, 11, 0)),
-
-    Task(id=9, title="Przygotowac prezentacje", description="",
-         due_date=datetime(2026, 6, 25, 13, 0), is_done=False, priority=True,
-         category_id=1, created_at=datetime(2026, 6, 14, 10, 0),
-         modified_at=datetime(2026, 6, 16, 15, 0)),
-
+    Task(
+        id=2,
+        title="Spotkanie z zespolem",
+        description="Omowienie postepow",
+        due_date=datetime(2026, 6, 19, 10, 0),
+        is_done=False,
+        priority=True,
+        category_id=1,
+        created_at=datetime(2026, 6, 10, 12, 0),
+        modified_at=datetime(2026, 6, 17, 8, 30),
+    ),
+    Task(
+        id=3,
+        title="Kupic prezent",
+        description="",
+        due_date=datetime(2026, 6, 20, 0, 0),
+        is_done=False,
+        priority=False,
+        category_id=3,
+        created_at=datetime(2026, 6, 15, 14, 0),
+        modified_at=datetime(2026, 6, 15, 14, 0),
+    ),
+    Task(
+        id=4,
+        title="Wyslac raport",
+        description="",
+        due_date=datetime(2026, 6, 18, 16, 0),
+        is_done=True,
+        priority=False,
+        category_id=1,
+        created_at=datetime(2026, 6, 10, 9, 0),
+        modified_at=datetime(2026, 6, 18, 16, 5),
+    ),
+    Task(
+        id=6,
+        title="Zadzwonic do mamy",
+        description="",
+        due_date=datetime(2026, 6, 19, 19, 0),
+        is_done=False,
+        priority=False,
+        category_id=None,
+        created_at=datetime(2026, 6, 19, 8, 0),
+        modified_at=datetime(2026, 6, 19, 8, 0),
+    ),
+    Task(
+        id=7,
+        title="Oddac ksiazki do biblioteki",
+        description="",
+        due_date=datetime(2026, 6, 15, 17, 0),
+        is_done=False,
+        priority=True,
+        category_id=3,
+        created_at=datetime(2026, 6, 5, 11, 0),
+        modified_at=datetime(2026, 6, 5, 11, 0),
+    ),
+    Task(
+        id=9,
+        title="Przygotowac prezentacje",
+        description="",
+        due_date=datetime(2026, 6, 25, 13, 0),
+        is_done=False,
+        priority=True,
+        category_id=1,
+        created_at=datetime(2026, 6, 14, 10, 0),
+        modified_at=datetime(2026, 6, 16, 15, 0),
+    ),
     # USUNIETE - nigdy nie powinno byc widoczne poza koszem
-    Task(id=8, title="Stare zadanie", description="",
-         due_date=datetime(2026, 6, 10, 12, 0), is_done=False, priority=False,
-         category_id=2, created_at=datetime(2026, 6, 1, 9, 0),
-         modified_at=datetime(2026, 6, 12, 9, 0),
-         is_deleted=True),
+    Task(
+        id=8,
+        title="Stare zadanie",
+        description="",
+        due_date=datetime(2026, 6, 10, 12, 0),
+        is_done=False,
+        priority=False,
+        category_id=2,
+        created_at=datetime(2026, 6, 1, 9, 0),
+        modified_at=datetime(2026, 6, 12, 9, 0),
+        is_deleted=True,
+    ),
 ]
 
 
 # ============================================================
 # WZORZEC REPOZYTORIUM - interfejs uzywany przez front
 # ============================================================
+
 
 class TaskRepository:
     """Abstrakcyjny interfejs repozytorium zadan.
@@ -180,11 +249,14 @@ class FakeTaskRepository(TaskRepository):
 
 _default_repo = FakeTaskRepository()
 
+
 def get_all_tasks(include_deleted=False):
     return _default_repo.get_all(include_deleted)
 
+
 def get_category(category_id):
     return _default_repo.get_category(category_id)
+
 
 def get_all_categories():
     return _default_repo.get_categories()

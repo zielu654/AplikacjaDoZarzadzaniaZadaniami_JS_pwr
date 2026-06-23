@@ -7,15 +7,21 @@ from Services.google_calendar_service import GoogleCalendarService
 from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 
+
 class AuthController:
-    def __init__(self, google_api_service: GoogleCalendarService, credentials_repo: IUserCredentialsRepository, current_user_id: int = 1):
+    def __init__(
+        self,
+        google_api_service: GoogleCalendarService,
+        credentials_repo: IUserCredentialsRepository,
+        current_user_id: int = 1,
+    ):
         self._google_api = google_api_service
         self._credentials_repo = credentials_repo
         self._user_id = current_user_id
 
     def login(self) -> bool:
         try:
-            if not getattr(self._google_api, 'service', None):
+            if not getattr(self._google_api, "service", None):
                 self._google_api.service = self._google_api._authenticate()
             return True
         except Exception:
@@ -40,13 +46,13 @@ class AuthController:
         return False
 
     def get_connected_account_info(self) -> Optional[str]:
-        if not self.is_logged_in() or not getattr(self._google_api, 'service', None):
+        if not self.is_logged_in() or not getattr(self._google_api, "service", None):
             return None
 
         try:
-            calendar = self._google_api.service.calendars().get(calendarId='primary').execute()
-            return calendar.get('id')
-        except HttpError as e:
+            calendar = self._google_api.service.calendars().get(calendarId="primary").execute()
+            return calendar.get("id")
+        except HttpError:
             return None
 
     def get_last_sync_time(self) -> Optional[datetime]:

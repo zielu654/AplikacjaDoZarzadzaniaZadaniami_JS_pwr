@@ -4,10 +4,8 @@ from unittest.mock import MagicMock
 
 from DTO.eventDTO import EventDTO
 from DTO.deleted_google_eventDTO import DeletedGoogleEventDTO
-from Models.event import EventSource
+#from Models.event import EventSource
 
-
-from Services.sync_mediator import SyncMediator
 
 
 @pytest.fixture
@@ -31,13 +29,16 @@ def mock_auth_controller():
 @pytest.fixture
 def sync_mediator(mock_google_service, mock_event_controller, mock_auth_controller):
     from Services.sync_mediator import SyncMediator
+
     mediator = SyncMediator(mock_google_service)
     mediator.set_controllers(mock_event_controller, mock_auth_controller)
     return mediator
 
+
 def test_uninitialized_mediator_raises_runtime_error(mock_google_service):
     """Test 1: Niezainicjowany Mediator rzuca RuntimeError"""
     from Services.sync_mediator import SyncMediator
+
     mediator = SyncMediator(mock_google_service)
 
     with pytest.raises(RuntimeError) as excinfo:

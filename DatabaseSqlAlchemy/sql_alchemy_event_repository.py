@@ -11,6 +11,7 @@ from Core.interfaces import IEventRepository
 from Models.event import Event
 from Core.exceptions import RecordNotFoundError, db_error_handler
 
+
 class SqlAlchemyEventRepository(IEventRepository):
     def __init__(self, session):
         self.session = session
@@ -20,7 +21,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         new_event = Event(
             title=event_dto.title,
             description=event_dto.description,
-            category_id=event_dto.category.id if event_dto.category else getattr(event_dto, 'category_id', None),
+            category_id=event_dto.category.id if event_dto.category else getattr(event_dto, "category_id", None),
             start_datetime=event_dto.start_datetime,
             end_datetime=event_dto.end_datetime,
             is_high_priority=event_dto.is_high_priority,
@@ -28,7 +29,7 @@ class SqlAlchemyEventRepository(IEventRepository):
             is_deleted=False,
             updated_at=datetime.now(timezone.utc),
             created_at=datetime.now(timezone.utc),
-            source=event_dto.source
+            source=event_dto.source,
         )
 
         if event_dto.rrule_str:
@@ -40,9 +41,7 @@ class SqlAlchemyEventRepository(IEventRepository):
 
         if event_dto.google_event_id:
             new_event.sync_metadata = SyncMetadata(
-                event_id=new_event.id,
-                google_event_id=event_dto.google_event_id,
-                last_synced=datetime.now(timezone.utc)
+                event_id=new_event.id, google_event_id=event_dto.google_event_id, last_synced=datetime.now(timezone.utc)
             )
         self.session.commit()
         return new_event.id
@@ -62,7 +61,9 @@ class SqlAlchemyEventRepository(IEventRepository):
         existing_event.end_datetime = event_dto.end_datetime
         existing_event.is_high_priority = event_dto.is_high_priority
         existing_event.is_completed = event_dto.is_completed
-        existing_event.category_id = event_dto.category.id if event_dto.category else getattr(event_dto, 'category_id', None)
+        existing_event.category_id = (
+            event_dto.category.id if event_dto.category else getattr(event_dto, "category_id", None)
+        )
 
         new_rrule_str = event_dto.rrule_str
 
@@ -86,9 +87,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         else:
             if new_google_id:
                 existing_event.sync_metadata = SyncMetadata(
-                    event_id=existing_event.id,
-                    google_event_id=new_google_id,
-                    last_synced=datetime.now(timezone.utc)
+                    event_id=existing_event.id, google_event_id=new_google_id, last_synced=datetime.now(timezone.utc)
                 )
 
         existing_event.updated_at = datetime.now(timezone.utc)
@@ -114,9 +113,7 @@ class SqlAlchemyEventRepository(IEventRepository):
         if syncDate is None:
             return self.session.query(Event).all()
 
-        events = self.session.query(Event).filter(
-            Event.updated_at > syncDate
-        ).all()
+        events = self.session.query(Event).filter(Event.updated_at > syncDate).all()
         return [SqlAlchemyEventQuery.map_to_dto(event) for event in events]
 
     @db_error_handler
@@ -137,9 +134,7 @@ class SqlAlchemyEventRepository(IEventRepository):
             existing_event.sync_metadata.last_synced = last_synced
         else:
             existing_event.sync_metadata = SyncMetadata(
-                event_id=existing_event.id,
-                google_event_id=google_event_id,
-                last_synced=last_synced
+                event_id=existing_event.id, google_event_id=google_event_id, last_synced=last_synced
             )
         self.session.commit()
 

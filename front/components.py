@@ -10,10 +10,10 @@ import tkinter.font as tkfont
 
 from front.theme import BG, FG, FONT_FAMILY
 
-
 # ============================================================
 # IconButton - klikalna etykieta tekstowa
 # ============================================================
+
 
 class IconButton(tk.Label):
     """Klikalny Label - uzywany dla Sortuj/Filtruj/Widok/+/...
@@ -24,10 +24,8 @@ class IconButton(tk.Label):
     zawinie krotkiego tekstu) renderowanie idzie "bezpieczna sciezka" w Tk.
     """
 
-    def __init__(self, parent, text, font=None, on_click=None,
-                 bg=BG, fg=FG, wraplength=400, **kwargs):
-        super().__init__(parent, text=text, font=font, bg=bg, fg=fg,
-                         cursor="hand2", wraplength=wraplength, **kwargs)
+    def __init__(self, parent, text, font=None, on_click=None, bg=BG, fg=FG, wraplength=400, **kwargs):
+        super().__init__(parent, text=text, font=font, bg=bg, fg=fg, cursor="hand2", wraplength=wraplength, **kwargs)
         self._on_click = on_click or (lambda: None)
         self.bind("<Button-1>", lambda e: self._on_click())
 
@@ -41,6 +39,7 @@ class IconButton(tk.Label):
 # ============================================================
 # CheckCircle - rysowany checkbox (Canvas zamiast Label)
 # ============================================================
+
 
 class CheckCircle(tk.Canvas):
     """Kolko-checkbox narysowane na Canvasie (create_oval/create_line) zamiast
@@ -75,19 +74,29 @@ class CheckCircle(tk.Canvas):
         margin = max(2, int(s * 0.1))
         if self._done:
             # wypelnione kolko w kolorze kategorii + bialy ptaszek
-            self.create_oval(margin, margin, s - margin, s - margin,
-                             fill=self._accent_color, outline=self._accent_color)
-            self.create_line(s * 0.27, s * 0.52, s * 0.44, s * 0.70, s * 0.75, s * 0.30,
-                             fill="white", width=max(2, int(s * 0.09)),
-                             capstyle="round", joinstyle="round")
+            self.create_oval(
+                margin, margin, s - margin, s - margin, fill=self._accent_color, outline=self._accent_color
+            )
+            self.create_line(
+                s * 0.27,
+                s * 0.52,
+                s * 0.44,
+                s * 0.70,
+                s * 0.75,
+                s * 0.30,
+                fill="white",
+                width=max(2, int(s * 0.09)),
+                capstyle="round",
+                joinstyle="round",
+            )
         else:
-            self.create_oval(margin, margin, s - margin, s - margin,
-                             outline=FG, width=max(2, int(s * 0.06)))
+            self.create_oval(margin, margin, s - margin, s - margin, outline=FG, width=max(2, int(s * 0.06)))
 
 
 # ============================================================
 # DropdownButton - klikalny tekst -> rozwijane menu z opcjami
 # ============================================================
+
 
 class DropdownButton(tk.Label):
     """Klikalna etykieta typu Sortuj/Filtruj/Widok. Po klikniecu otwiera
@@ -98,10 +107,8 @@ class DropdownButton(tk.Label):
              per opcja.
     """
 
-    def __init__(self, parent, text, options, font=None,
-                 bg=BG, fg=FG, wraplength=400, **kwargs):
-        super().__init__(parent, text=text, font=font, bg=bg, fg=fg,
-                         cursor="hand2", wraplength=wraplength, **kwargs)
+    def __init__(self, parent, text, options, font=None, bg=BG, fg=FG, wraplength=400, **kwargs):
+        super().__init__(parent, text=text, font=font, bg=bg, fg=fg, cursor="hand2", wraplength=wraplength, **kwargs)
         self._opts = options
         self.bind("<Button-1>", self._show_menu)
 
@@ -123,6 +130,7 @@ class DropdownButton(tk.Label):
 # ContextMenuButton - klikalne "..." z menu Edytuj/Dodaj/Usun
 # ============================================================
 
+
 class ContextMenuButton(tk.Label):
     """Klikalne '...' z menu kontekstowym. Domyslne opcje to "Edytuj, Dodaj,
     Usun" (zgodnie z legenda ze szkicow: "Edytuj, Dodaj, Usun zawsze bazowo").
@@ -132,13 +140,9 @@ class ContextMenuButton(tk.Label):
     DEFAULT_OPTIONS = ("Edytuj", "Dodaj", "Usun")
     ICON_TEXT = "\u2022\u2022\u2022"  # •••
 
-    def __init__(self, parent, font=None, options=None,
-                 bg=BG, fg=FG, **kwargs):
-        super().__init__(parent, text=self.ICON_TEXT, font=font, bg=bg, fg=fg,
-                         cursor="hand2", wraplength=100, **kwargs)
-        self._opts = options if options is not None else [
-            (opt, None) for opt in self.DEFAULT_OPTIONS
-        ]
+    def __init__(self, parent, font=None, options=None, bg=BG, fg=FG, **kwargs):
+        super().__init__(parent, text=self.ICON_TEXT, font=font, bg=bg, fg=fg, cursor="hand2", wraplength=100, **kwargs)
+        self._opts = options if options is not None else [(opt, None) for opt in self.DEFAULT_OPTIONS]
         self.bind("<Button-1>", self._show_menu)
 
     def _show_menu(self, event):
@@ -158,6 +162,7 @@ class ContextMenuButton(tk.Label):
 # ============================================================
 # ScrollableContent - canvas + scrollbar + frame, hermetyzuje boilerplate
 # ============================================================
+
 
 class ScrollableContent(tk.Frame):
     """Scrollowalny kontener. Wystawia `.container` (Frame), do ktorego
@@ -185,10 +190,8 @@ class ScrollableContent(tk.Frame):
         self.container = tk.Frame(self._canvas, bg=bg)
         self._window_id = self._canvas.create_window((0, 0), window=self.container, anchor="nw")
 
-        self.container.bind("<Configure>",
-                            lambda e: self._canvas.configure(scrollregion=self._canvas.bbox("all")))
-        self._canvas.bind("<Configure>",
-                          lambda e: self._canvas.itemconfig(self._window_id, width=e.width))
+        self.container.bind("<Configure>", lambda e: self._canvas.configure(scrollregion=self._canvas.bbox("all")))
+        self._canvas.bind("<Configure>", lambda e: self._canvas.itemconfig(self._window_id, width=e.width))
 
         # Mousewheel - aktywne gdy mysz nad tym kontenerem
         self.bind("<Enter>", self._bind_mousewheel)
@@ -217,6 +220,7 @@ class ScrollableContent(tk.Frame):
 # ============================================================
 # Helper - tworzenie obiektu Font ze wspolnym fallbackiem rodziny
 # ============================================================
+
 
 def make_font(size, weight="normal"):
     return tkfont.Font(family=FONT_FAMILY, size=size, weight=weight)

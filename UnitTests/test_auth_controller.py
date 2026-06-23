@@ -10,7 +10,7 @@ from DTO.user_credentialsDTO import UserCredentialsDTO
 def mock_google_service():
     mock_service = MagicMock()
     mock_service.service = None
-    mock_service.SCOPES = ['https://www.googleapis.com/auth/calendar']
+    mock_service.SCOPES = ["https://www.googleapis.com/auth/calendar"]
     return mock_service
 
 
@@ -21,11 +21,7 @@ def mock_repo():
 
 @pytest.fixture
 def auth_controller(mock_google_service, mock_repo):
-    return AuthController(
-        google_api_service=mock_google_service,
-        credentials_repo=mock_repo,
-        current_user_id=1
-    )
+    return AuthController(google_api_service=mock_google_service, credentials_repo=mock_repo, current_user_id=1)
 
 
 def test_login_authenticates_if_service_is_none(auth_controller, mock_google_service):
@@ -50,12 +46,13 @@ def test_login_skips_authentication_if_already_connected(auth_controller, mock_g
 def test_logout_clears_db_and_resets_service(auth_controller, mock_google_service, mock_repo):
     auth_controller.logout()
 
-    user_id = getattr(auth_controller, '_user_id', 1)
+    user_id = getattr(auth_controller, "_user_id", 1)
 
     mock_repo.delete_for_user.assert_called_once_with(user_id)
     assert mock_google_service.service is None
 
-@patch('Controllers.auth_controller.Credentials')
+
+@patch("Controllers.auth_controller.Credentials")
 def test_is_logged_in_returns_true_for_valid_token(mock_credentials_class, auth_controller, mock_repo):
     fake_token = json.dumps({"access_token": "abc"})
     mock_repo.get_by_user_id.return_value = MagicMock(token_data=fake_token)
@@ -76,11 +73,11 @@ def test_get_connected_account_info_returns_email(auth_controller, mock_google_s
     auth_controller.is_logged_in = MagicMock(return_value=True)
     mock_google_service.service = MagicMock()
 
-    mock_execute = MagicMock(return_value={'id': 'testowy_user@gmail.com'})
+    mock_execute = MagicMock(return_value={"id": "testowy_user@gmail.com"})
     mock_get = MagicMock(return_value=MagicMock(execute=mock_execute))
     mock_google_service.service.calendars.return_value = MagicMock(get=mock_get)
 
     email = auth_controller.get_connected_account_info()
 
-    assert email == 'testowy_user@gmail.com'
-    mock_get.assert_called_once_with(calendarId='primary')
+    assert email == "testowy_user@gmail.com"
+    mock_get.assert_called_once_with(calendarId="primary")

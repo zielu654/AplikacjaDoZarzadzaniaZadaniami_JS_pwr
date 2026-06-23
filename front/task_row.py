@@ -19,23 +19,31 @@ import re
 import tkinter as tk
 
 from front.theme import (
-    BG, FG, INFO_FG, DONE_FG, DEFAULT_BORDER, PRIORYTETOWE_COLOR, ON_COLOR_FG,
-    SIZE_TASK_TITLE, SIZE_TASK_INFO,
-    TASK_TITLE_SCALE, TASK_INFO_SCALE, TASK_CHECKBOX_SCALE,
+    BG,
+    FG,
+    INFO_FG,
+    DONE_FG,
+    DEFAULT_BORDER,
+    PRIORYTETOWE_COLOR,
+    ON_COLOR_FG,
+    SIZE_TASK_TITLE,
+    SIZE_TASK_INFO,
+    TASK_TITLE_SCALE,
+    TASK_INFO_SCALE,
+    TASK_CHECKBOX_SCALE,
     scaled,
 )
 from front.components import CheckCircle, ContextMenuButton, make_font
 
-
 # ============================================================
 # IKONY i parametry layoutu
 # ============================================================
-ICON_RECURRENCE = "\u21ba"   # ↺
+ICON_RECURRENCE = "\u21ba"  # ↺
 
-TASK_CHECKBOX_RESERVE = 64   # px na checkbox + padding
-TASK_MENU_RESERVE = 65       # px na "..." + prawy padding
-TASK_TITLE_MIN_PX = 100      # absolutne minimum tytulu w px
-MIN_INFO_RESERVE = 80        # minimalna szerokosc info (zeby tytul nie zjadl wszystkiego)
+TASK_CHECKBOX_RESERVE = 64  # px na checkbox + padding
+TASK_MENU_RESERVE = 65  # px na "..." + prawy padding
+TASK_TITLE_MIN_PX = 100  # absolutne minimum tytulu w px
+MIN_INFO_RESERVE = 80  # minimalna szerokosc info (zeby tytul nie zjadl wszystkiego)
 
 # wykrywa "HH:MM-HH:MM" na koncu stringa
 _TIME_RANGE_RE = re.compile(r"\d{1,2}:\d{2}-\d{1,2}:\d{2}$")
@@ -45,6 +53,7 @@ _TIME_RANGE_RE = re.compile(r"\d{1,2}:\d{2}-\d{1,2}:\d{2}$")
 # Helpery formatowania Task -> string (do UI)
 # ============================================================
 
+
 def _parse_recurrence(rule):
     """'co pon 18:00-19:00' -> ('co pon', '18:00 - 19:00')"""
     if not rule:
@@ -52,7 +61,7 @@ def _parse_recurrence(rule):
     match = _TIME_RANGE_RE.search(rule)
     if not match:
         return rule.strip(), None
-    cycle = rule[:match.start()].strip()
+    cycle = rule[: match.start()].strip()
     start, end = match.group(0).split("-", 1)
     return cycle, f"{start} - {end}"
 
@@ -83,14 +92,14 @@ def _accent_color_for_task(task, repository):
 # TaskRow
 # ============================================================
 
+
 class TaskRow(tk.Frame):
     """Jeden wiersz listy zadan.
 
     Sklad wizualny: [ramka 2px] -> [tlo (biale/kolorowe)] -> [O  Tytul  ↺ info  ...]
     """
 
-    def __init__(self, parent, task, repository, style="outlined",
-                 on_toggle=None, on_menu=None):
+    def __init__(self, parent, task, repository, style="outlined", on_toggle=None, on_menu=None):
         self.task = task
         self.repository = repository
         self.style = style  # 'outlined' lub 'filled'
@@ -130,15 +139,28 @@ class TaskRow(tk.Frame):
         self.checkbox.grid(row=0, column=0, padx=(12, 10), pady=12)
 
         # Tytul - z wraplength, wiec zawija sie zamiast ucinac
-        self.lbl_title = tk.Label(inner, text=task.title, font=self.title_font,
-                                  bg=inner_bg, fg=text_fg, anchor="w",
-                                  justify="left", wraplength=200)
+        self.lbl_title = tk.Label(
+            inner,
+            text=task.title,
+            font=self.title_font,
+            bg=inner_bg,
+            fg=text_fg,
+            anchor="w",
+            justify="left",
+            wraplength=200,
+        )
         self.lbl_title.grid(row=0, column=1, sticky="w")
 
         # Info (powtarzalnosc + godziny)
-        self.lbl_info = tk.Label(inner, text=_format_task_info(task),
-                                 font=self.info_font, bg=inner_bg, fg=info_fg,
-                                 wraplength=150, justify="left")
+        self.lbl_info = tk.Label(
+            inner,
+            text=_format_task_info(task),
+            font=self.info_font,
+            bg=inner_bg,
+            fg=info_fg,
+            wraplength=150,
+            justify="left",
+        )
         self.lbl_info.grid(row=0, column=2, padx=(10, 6))
 
         # Menu kontekstowe "..." (Edytuj/Dodaj/Usun). Wszystkie opcje na razie
@@ -146,11 +168,14 @@ class TaskRow(tk.Frame):
         # to byl "Edytuj" czy "Usun") przyjdzie pozniej, na razie sygnalizujemy
         # tylko ze user klikal cos w menu kontekstowym tego zadania.
         self.menu_btn = ContextMenuButton(
-            inner, font=self.info_font, bg=inner_bg, fg=text_fg,
+            inner,
+            font=self.info_font,
+            bg=inner_bg,
+            fg=text_fg,
             options=[
                 ("Edytuj", lambda: self.on_menu(self.task)),
-                ("Dodaj",  lambda: self.on_menu(self.task)),
-                ("Usun",   lambda: self.on_menu(self.task)),
+                ("Dodaj", lambda: self.on_menu(self.task)),
+                ("Usun", lambda: self.on_menu(self.task)),
             ],
         )
         self.menu_btn.grid(row=0, column=3, padx=(0, 20))
@@ -190,14 +215,12 @@ class TaskRow(tk.Frame):
 
         # Tytul: tyle ile FAKTYCZNIE potrzebuje (font.measure), ograniczone
         # przez to co zostaje po zarezerwowaniu checkboxa+menu+info_floor.
-        available = max(TASK_TITLE_MIN_PX,
-                        width - TASK_CHECKBOX_RESERVE - TASK_MENU_RESERVE - MIN_INFO_RESERVE)
+        available = max(TASK_TITLE_MIN_PX, width - TASK_CHECKBOX_RESERVE - TASK_MENU_RESERVE - MIN_INFO_RESERVE)
         natural = self.title_font.measure(self.task.title)
         title_min = max(TASK_TITLE_MIN_PX, min(natural + 10, available))
         self.inner.columnconfigure(1, minsize=title_min)
         self.lbl_title.config(wraplength=title_min)
 
         # Info: tyle, ile zostaje po wszystkim (z drobnym zapasem bezpieczenstwa).
-        wraplength_info = max(80, width - TASK_CHECKBOX_RESERVE - title_min
-                              - TASK_MENU_RESERVE - 10)
+        wraplength_info = max(80, width - TASK_CHECKBOX_RESERVE - title_min - TASK_MENU_RESERVE - 10)
         self.lbl_info.config(wraplength=wraplength_info)

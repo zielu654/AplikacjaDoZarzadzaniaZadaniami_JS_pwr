@@ -28,8 +28,16 @@ def db_session():
 def test_add_event_success_returns_id(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
-    dto = EventDTO(id=0, title="Nowe zadanie", description=None, start_datetime=None,
-                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto = EventDTO(
+        id=0,
+        title="Nowe zadanie",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
 
     new_id = repo.add(dto)
 
@@ -39,8 +47,16 @@ def test_add_event_success_returns_id(db_session):
 
 def test_add_event_saves_to_database(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    dto = EventDTO(id=0, title="Testowy zapis", description=None, start_datetime=None,
-                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto = EventDTO(
+        id=0,
+        title="Testowy zapis",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
 
     new_id = repo.add(dto)
 
@@ -53,8 +69,16 @@ def test_add_event_saves_to_database(db_session):
 def test_update_event_changes_data_and_updated_at(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
-    dto = EventDTO(id=0, title="Stary tytuł", description=None, start_datetime=None,
-                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto = EventDTO(
+        id=0,
+        title="Stary tytuł",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
     event_id = repo.add(dto)
 
     past_time = datetime.now() - timedelta(days=1)
@@ -73,8 +97,16 @@ def test_update_event_changes_data_and_updated_at(db_session):
 
 def test_delete_performs_soft_delete(db_session):
     repo = SqlAlchemyEventRepository(db_session)
-    dto = EventDTO(id=0, title="Do usunięcia", description=None, start_datetime=None,
-                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto = EventDTO(
+        id=0,
+        title="Do usunięcia",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
     event_id = repo.add(dto)
 
     repo.delete(event_id)
@@ -94,10 +126,26 @@ def test_delete_raises_record_not_found(db_session):
 def test_get_all_returns_only_active_events(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
-    dto1 = EventDTO(id=0, title="Aktywne 1", description=None, start_datetime=None,
-                    end_datetime=None, is_high_priority=False, is_completed=False, category=None)
-    dto2 = EventDTO(id=0, title="Aktywne 2", description=None, start_datetime=None,
-                    end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto1 = EventDTO(
+        id=0,
+        title="Aktywne 1",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
+    dto2 = EventDTO(
+        id=0,
+        title="Aktywne 2",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
     repo.add(dto1)
     repo.add(dto2)
 
@@ -125,8 +173,16 @@ def test_get_all_empty_database_returns_empty_list(db_session):
 def test_get_dirty_records_without_sync_metadata_returns_all(db_session):
     repo = SqlAlchemyEventRepository(db_session)
 
-    dto = EventDTO(id=0, title="Event 1", description=None, start_datetime=None,
-                   end_datetime=None, is_high_priority=False, is_completed=False, category=None)
+    dto = EventDTO(
+        id=0,
+        title="Event 1",
+        description=None,
+        start_datetime=None,
+        end_datetime=None,
+        is_high_priority=False,
+        is_completed=False,
+        category=None,
+    )
     repo.add(dto)
 
     deleted_db_event = Event(title="Event 2", is_deleted=True, updated_at=datetime.now())
@@ -156,7 +212,7 @@ def test_get_dirty_records_returns_only_modified_after_sync(db_session):
         end_datetime=None,
         is_high_priority=False,
         is_completed=False,
-        category=None
+        category=None,
     )
     old_id = repo.add(old_event_dto)
 
@@ -176,7 +232,7 @@ def test_get_dirty_records_returns_only_modified_after_sync(db_session):
         end_datetime=None,
         is_high_priority=False,
         is_completed=False,
-        category=None
+        category=None,
     )
     repo.add(new_event_dto)
 
@@ -187,6 +243,7 @@ def test_get_dirty_records_returns_only_modified_after_sync(db_session):
 
     assert isinstance(results[0], EventDTO)
 
+
 def test_save_new_user_credentials_saves_to_db(db_session):
     repo = SqlAlchemyUserCredentialsRepository(db_session)
     dto = UserCredentialsDTO(user_id=1, token_data='{"token": "xyz"}')
@@ -196,6 +253,7 @@ def test_save_new_user_credentials_saves_to_db(db_session):
     saved = db_session.query(UserCredentials).filter(UserCredentials.user_id == 1).first()
     assert saved is not None
     assert saved.token_data == '{"token": "xyz"}'
+
 
 def test_save_existing_user_credentials_updates_it(db_session):
     repo = SqlAlchemyUserCredentialsRepository(db_session)
@@ -215,11 +273,29 @@ def test_query_high_priority_returns_only_high_priority_events(db_session):
 
     # Dodajemy jedno zwykłe i jedno ważne zadanie
     repo.add(
-        EventDTO(id=0, title="Zwykłe", description=None, start_datetime=None, end_datetime=None, is_high_priority=False,
-                 is_completed=False, category=None))
+        EventDTO(
+            id=0,
+            title="Zwykłe",
+            description=None,
+            start_datetime=None,
+            end_datetime=None,
+            is_high_priority=False,
+            is_completed=False,
+            category=None,
+        )
+    )
     repo.add(
-        EventDTO(id=0, title="Ważne", description=None, start_datetime=None, end_datetime=None, is_high_priority=True,
-                 is_completed=False, category=None))
+        EventDTO(
+            id=0,
+            title="Ważne",
+            description=None,
+            start_datetime=None,
+            end_datetime=None,
+            is_high_priority=True,
+            is_completed=False,
+            category=None,
+        )
+    )
 
     results = repo.query().high_priority().get_list()
 
@@ -233,14 +309,44 @@ def test_query_overdue_returns_only_past_uncompleted_events(db_session):
     future_date = datetime.now() + timedelta(days=2)
 
     # 1. Zaległe (data minęła, nieukończone)
-    repo.add(EventDTO(id=0, title="Zaległe", description=None, start_datetime=past_date, end_datetime=past_date,
-                      is_high_priority=False, is_completed=False, category=None))
+    repo.add(
+        EventDTO(
+            id=0,
+            title="Zaległe",
+            description=None,
+            start_datetime=past_date,
+            end_datetime=past_date,
+            is_high_priority=False,
+            is_completed=False,
+            category=None,
+        )
+    )
     # 2. Ukończone w przeszłości (nie jest zaległe, bo zrobione)
-    repo.add(EventDTO(id=0, title="Zrobione", description=None, start_datetime=past_date, end_datetime=past_date,
-                      is_high_priority=False, is_completed=True, category=None))
+    repo.add(
+        EventDTO(
+            id=0,
+            title="Zrobione",
+            description=None,
+            start_datetime=past_date,
+            end_datetime=past_date,
+            is_high_priority=False,
+            is_completed=True,
+            category=None,
+        )
+    )
     # 3. Przyszłe (jeszcze jest czas)
-    repo.add(EventDTO(id=0, title="Przyszłe", description=None, start_datetime=future_date, end_datetime=future_date,
-                      is_high_priority=False, is_completed=False, category=None))
+    repo.add(
+        EventDTO(
+            id=0,
+            title="Przyszłe",
+            description=None,
+            start_datetime=future_date,
+            end_datetime=future_date,
+            is_high_priority=False,
+            is_completed=False,
+            category=None,
+        )
+    )
 
     results = repo.query().overdue().get_list()
 
@@ -254,10 +360,29 @@ def test_query_for_date_returns_events_for_specific_day(db_session):
     other_date = datetime(2026, 6, 22, 10, 0)
 
     repo.add(
-        EventDTO(id=0, title="W dany dzień", description=None, start_datetime=target_date, end_datetime=target_date,
-                 is_high_priority=False, is_completed=False, category=None))
-    repo.add(EventDTO(id=0, title="Inny dzień", description=None, start_datetime=other_date, end_datetime=other_date,
-                      is_high_priority=False, is_completed=False, category=None))
+        EventDTO(
+            id=0,
+            title="W dany dzień",
+            description=None,
+            start_datetime=target_date,
+            end_datetime=target_date,
+            is_high_priority=False,
+            is_completed=False,
+            category=None,
+        )
+    )
+    repo.add(
+        EventDTO(
+            id=0,
+            title="Inny dzień",
+            description=None,
+            start_datetime=other_date,
+            end_datetime=other_date,
+            is_high_priority=False,
+            is_completed=False,
+            category=None,
+        )
+    )
 
     results = repo.query().for_date(target_date.date()).get_list()
 
@@ -269,10 +394,30 @@ def test_query_combined_filters_high_priority_and_overdue(db_session):
     repo = SqlAlchemyEventRepository(db_session)
     past_date = datetime.now() - timedelta(days=1)
 
-    repo.add(EventDTO(id=0, title="Zaległe zwykłe", description=None, start_datetime=past_date, end_datetime=past_date,
-                      is_high_priority=False, is_completed=False, category=None))
-    repo.add(EventDTO(id=0, title="Zaległe ważne", description=None, start_datetime=past_date, end_datetime=past_date,
-                      is_high_priority=True, is_completed=False, category=None))
+    repo.add(
+        EventDTO(
+            id=0,
+            title="Zaległe zwykłe",
+            description=None,
+            start_datetime=past_date,
+            end_datetime=past_date,
+            is_high_priority=False,
+            is_completed=False,
+            category=None,
+        )
+    )
+    repo.add(
+        EventDTO(
+            id=0,
+            title="Zaległe ważne",
+            description=None,
+            start_datetime=past_date,
+            end_datetime=past_date,
+            is_high_priority=True,
+            is_completed=False,
+            category=None,
+        )
+    )
 
     results = repo.query().high_priority().overdue().get_list()
 

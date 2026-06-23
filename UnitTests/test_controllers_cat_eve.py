@@ -10,6 +10,7 @@ from Controllers.category_controller import CategoryController
 from Controllers.event_controller import EventController
 from Core.exceptions import EmptyFieldError, ResourceNotFoundError, InvalidDateRangeError, ValidationError
 
+
 @pytest.fixture
 def db_session():
     engine = create_engine("sqlite:///:memory:")
@@ -50,7 +51,7 @@ def test_edit_category_updates_fields(controllers):
     cat_ctrl, _ = controllers
     cat_id = cat_ctrl.create_category("Stara", "#7986cb")
 
-    cat_ctrl.edit_category(cat_id, {'name': 'Nowa', 'color_hex': '#8e24aa'})
+    cat_ctrl.edit_category(cat_id, {"name": "Nowa", "color_hex": "#8e24aa"})
 
     updated = cat_ctrl.get_category_by_id(cat_id)
     assert updated.name == "Nowa"
@@ -93,7 +94,7 @@ def test_create_event_success(controllers):
         category_id=None,
         start_datetime=now,
         end_datetime=now + timedelta(hours=1),
-        priority=True
+        priority=True,
     )
 
     event = event_ctrl.get_event_by_id(ev_id)
@@ -111,7 +112,7 @@ def test_create_event_invalid_dates_raises_error(controllers):
             description="",
             category_id=None,
             start_datetime=now,
-            end_datetime=now - timedelta(hours=1)  # Data zakończenia przed rozpoczęciem
+            end_datetime=now - timedelta(hours=1),  # Data zakończenia przed rozpoczęciem
         )
 
 
@@ -119,7 +120,7 @@ def test_edit_event_updates_partial_fields(controllers):
     _, event_ctrl = controllers
     ev_id = event_ctrl.create_new_event("Stare zadanie", "Opis", None)
 
-    event_ctrl.edit_event(ev_id, {'title': 'Nowy tytuł', 'priority': True})
+    event_ctrl.edit_event(ev_id, {"title": "Nowy tytuł", "priority": True})
 
     updated = event_ctrl.get_event_by_id(ev_id)
     assert updated.title == "Nowy tytuł"
@@ -141,10 +142,7 @@ def test_create_event_with_recurrence_rule(controllers):
     _, event_ctrl = controllers
 
     ev_id = event_ctrl.create_new_event(
-        title="Codzienne spotkanie",
-        description="Daily standup",
-        category_id=None,
-        rrule="FREQ=DAILY"
+        title="Codzienne spotkanie", description="Daily standup", category_id=None, rrule="FREQ=DAILY"
     )
 
     event = event_ctrl.get_event_by_id(ev_id)
@@ -155,7 +153,7 @@ def test_edit_event_adds_recurrence_rule_to_single_event(controllers):
     _, event_ctrl = controllers
     ev_id = event_ctrl.create_new_event("Zadanie jednorazowe", "Opis", None)
 
-    event_ctrl.edit_event(ev_id, {'rrule_string': 'FREQ=YEARLY'})
+    event_ctrl.edit_event(ev_id, {"rrule_string": "FREQ=YEARLY"})
 
     updated = event_ctrl.get_event_by_id(ev_id)
     assert updated.rrule_str == "FREQ=YEARLY"
@@ -165,7 +163,7 @@ def test_edit_event_updates_existing_recurrence_rule(controllers):
     _, event_ctrl = controllers
     ev_id = event_ctrl.create_new_event("Zadanie", "Opis", None, rrule="FREQ=WEEKLY")
 
-    event_ctrl.edit_event(ev_id, {'rrule_string': 'FREQ=MONTHLY'})
+    event_ctrl.edit_event(ev_id, {"rrule_string": "FREQ=MONTHLY"})
 
     updated = event_ctrl.get_event_by_id(ev_id)
     assert updated.rrule_str == "FREQ=MONTHLY"
@@ -175,7 +173,7 @@ def test_edit_event_removes_recurrence_rule_completely(controllers):
     _, event_ctrl = controllers
     ev_id = event_ctrl.create_new_event("Zadanie cykliczne", "Opis", None, rrule="FREQ=DAILY")
 
-    event_ctrl.edit_event(ev_id, {'rrule_string': None})
+    event_ctrl.edit_event(ev_id, {"rrule_string": None})
 
     updated = event_ctrl.get_event_by_id(ev_id)
     assert updated.rrule_str is None
@@ -184,7 +182,7 @@ def test_edit_event_removes_recurrence_rule_completely(controllers):
 def test_edit_nonexistent_event_raises_not_found(controllers):
     _, event_ctrl = controllers
     with pytest.raises(ResourceNotFoundError):
-        event_ctrl.edit_event(9999, {'title': 'Nowy tytuł'})
+        event_ctrl.edit_event(9999, {"title": "Nowy tytuł"})
 
 
 def test_mark_completed_nonexistent_event_raises_not_found(controllers):
@@ -207,6 +205,7 @@ def test_create_category_with_invalid_color_raises_validation_error(controllers)
 
     assert "nie pasuje do żadnego z dozwolonych kolorów" in str(excinfo.value)
 
+
 def test_delete_event_removes_it_from_active_queries(controllers):
     _, event_ctrl = controllers
     ev_id = event_ctrl.create_new_event("Do usunięcia", "Opis", None)
@@ -222,7 +221,7 @@ def test_edit_category_with_invalid_color_raises_validation_error(controllers):
     cat_id = cat_ctrl.create_category("Testowa", "#7986cb")  # Poprawny lavender
 
     with pytest.raises(ValidationError):
-        cat_ctrl.edit_category(cat_id, {'color_hex': '#111111'})
+        cat_ctrl.edit_category(cat_id, {"color_hex": "#111111"})
 
     with pytest.raises(ValidationError):
-        cat_ctrl.edit_category(cat_id, {'color_name': 'KolorSeledynowy'})
+        cat_ctrl.edit_category(cat_id, {"color_name": "KolorSeledynowy"})

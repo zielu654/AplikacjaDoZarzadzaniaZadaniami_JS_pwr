@@ -30,7 +30,6 @@ from front.header_toolbar import Header, Toolbar
 from front.components import ScrollableContent
 from front.task_row import TaskRow
 
-
 # Padding wewnatrz scrollowalnego kontentu
 CONTENT_PADX = 20
 CONTENT_PADY = 10
@@ -39,6 +38,7 @@ CONTENT_PADY = 10
 # ============================================================
 # View - baza
 # ============================================================
+
 
 class View(tk.Frame):
     """Abstrakcyjna baza dla widokow.
@@ -60,13 +60,10 @@ class View(tk.Frame):
         super().__init__(parent, bg=BG)
 
         self.header = Header(self, title)
-        self.header.pack(side="top", pady=(Header.HEADER_TOP_PADY,
-                                            Header.HEADER_BOT_PADY))
+        self.header.pack(side="top", pady=(Header.HEADER_TOP_PADY, Header.HEADER_BOT_PADY))
 
         self.toolbar = Toolbar(self, **toolbar_kwargs)
-        self.toolbar.pack(side="top", fill="x",
-                          padx=Toolbar.LIST_PADX,
-                          pady=(0, Toolbar.TOOLBAR_BOT_PADY))
+        self.toolbar.pack(side="top", fill="x", padx=Toolbar.LIST_PADX, pady=(0, Toolbar.TOOLBAR_BOT_PADY))
 
         self.scroll = ScrollableContent(self, bg=BG)
         self.scroll.pack(side="top", fill="both", expand=True)
@@ -100,6 +97,7 @@ class View(tk.Frame):
 # ListView - widok z lista zadan
 # ============================================================
 
+
 class ListView(View):
     """Widok wyswietlajacy liste zadan jako TaskRow.
 
@@ -116,10 +114,17 @@ class ListView(View):
 
     TASK_GAP_PADY = 10
 
-    def __init__(self, parent, title, tasks, repository,
-                 task_style="outlined",
-                 on_toggle_task=None, on_task_menu=None,
-                 **toolbar_kwargs):
+    def __init__(
+        self,
+        parent,
+        title,
+        tasks,
+        repository,
+        task_style="outlined",
+        on_toggle_task=None,
+        on_task_menu=None,
+        **toolbar_kwargs,
+    ):
         # Trzymamy parametry wierszy ZANIM wolamy super (bo build_content
         # bedzie zawolane w super().__init__() i potrzebuje tych pol).
         self.tasks = tasks
@@ -141,10 +146,14 @@ class ListView(View):
             self._add_task_row(container, task)
 
     def _add_task_row(self, container, task):
-        row = TaskRow(container, task, repository=self.repository,
-                      style=self.task_style,
-                      on_toggle=self.on_toggle_task,
-                      on_menu=self.on_task_menu)
+        row = TaskRow(
+            container,
+            task,
+            repository=self.repository,
+            style=self.task_style,
+            on_toggle=self.on_toggle_task,
+            on_menu=self.on_task_menu,
+        )
         row.pack(fill="x", padx=CONTENT_PADX, pady=self.TASK_GAP_PADY)
         self.task_rows.append(row)
         # Jesli mamy juz znana szerokosc - przelicz fonty nowego wiersza od razu

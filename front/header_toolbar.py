@@ -16,17 +16,22 @@ W roznych widokach toolbar wyglada inaczej:
 import tkinter as tk
 
 from front.theme import (
-    BG, FG,
-    SIZE_LZ_HEADER, SIZE_LZ_TOOLBAR, SIZE_LZ_PLUS,
-    LZ_HEADER_SCALE, LZ_TOOLBAR_SCALE, LZ_PLUS_SCALE,
+    BG,
+    FG,
+    SIZE_LZ_HEADER,
+    SIZE_LZ_TOOLBAR,
+    SIZE_LZ_PLUS,
+    LZ_HEADER_SCALE,
+    LZ_TOOLBAR_SCALE,
+    LZ_PLUS_SCALE,
     scaled,
 )
 from front.components import IconButton, DropdownButton, make_font
 
-
 # ============================================================
 # Header - tytul widoku
 # ============================================================
+
 
 class Header(tk.Label):
     """Tytul widoku - duzy bold tekst nad toolbarem."""
@@ -36,8 +41,7 @@ class Header(tk.Label):
 
     def __init__(self, parent, text):
         self.font = make_font(SIZE_LZ_HEADER)
-        super().__init__(parent, text=text, font=self.font, bg=BG, fg=FG,
-                         wraplength=600)
+        super().__init__(parent, text=text, font=self.font, bg=BG, fg=FG, wraplength=600)
 
     def set_text(self, text):
         self.config(text=text)
@@ -50,6 +54,7 @@ class Header(tk.Label):
 # ============================================================
 # Toolbar - konfigurowalny pasek narzedzi
 # ============================================================
+
 
 class Toolbar(tk.Frame):
     """Pasek narzedzi pod naglowkiem widoku.
@@ -74,10 +79,18 @@ class Toolbar(tk.Frame):
     TOOLBAR_PLUS_PADX = 20
     TOOLBAR_BOT_PADY = 20
 
-    def __init__(self, parent,
-                 sort_options=None, filter_options=None, view_options=None,
-                 show_add=True,
-                 on_sort=None, on_filter=None, on_view=None, on_add=None):
+    def __init__(
+        self,
+        parent,
+        sort_options=None,
+        filter_options=None,
+        view_options=None,
+        show_add=True,
+        on_sort=None,
+        on_filter=None,
+        on_view=None,
+        on_add=None,
+    ):
         super().__init__(parent, bg=BG)
 
         self.on_sort = on_sort or (lambda opt: None)
@@ -94,7 +107,9 @@ class Toolbar(tk.Frame):
         # LEWO: Sortuj
         if sort_options is not None:
             self.lbl_sortuj = DropdownButton(
-                self, text="Sortuj", font=self.toolbar_font,
+                self,
+                text="Sortuj",
+                font=self.toolbar_font,
                 options=[(opt, lambda o=opt: self.on_sort(o)) for opt in sort_options],
             )
             self.lbl_sortuj.pack(side="left")
@@ -106,7 +121,9 @@ class Toolbar(tk.Frame):
         # side='right' wpycha najpierw spakowane najbardziej w prawo).
         if filter_options is not None:
             self.lbl_filtruj = DropdownButton(
-                self, text="Filtruj", font=self.toolbar_font,
+                self,
+                text="Filtruj",
+                font=self.toolbar_font,
                 options=[(opt, lambda o=opt: self.on_filter(o)) for opt in filter_options],
             )
             self.lbl_filtruj.pack(side="right")
@@ -116,7 +133,9 @@ class Toolbar(tk.Frame):
 
         if view_options is not None:
             self.lbl_widok = DropdownButton(
-                self, text="Widok", font=self.toolbar_font,
+                self,
+                text="Widok",
+                font=self.toolbar_font,
                 options=[(opt, lambda o=opt: self.on_view(o)) for opt in view_options],
             )
             self.lbl_widok.pack(side="right", padx=(0, 20))
@@ -126,8 +145,7 @@ class Toolbar(tk.Frame):
 
         # SRODEK: "+"
         if show_add:
-            self.lbl_plus = IconButton(self, text="+", font=self.plus_font,
-                                       on_click=self.on_add)
+            self.lbl_plus = IconButton(self, text="+", font=self.plus_font, on_click=self.on_add)
             # Padx 20 zeby + nie kleil sie do "Filtruj" / "Widok"
             self.lbl_plus.pack(side="right", padx=self.TOOLBAR_PLUS_PADX)
             self._widgets.append((self.lbl_plus, self.plus_font))

@@ -59,7 +59,7 @@ python Demos/demo_sync.py
 ### 3. Uruchamianie Testów
 Aplikacja jest dokładnie przetestowana. Z głównego folderu uruchom testy za pomocą komendy:
 ```bash
-python -m pytest UnitTests
+python -m pytest -v UnitTests
 ```
 
 ### 4. Github

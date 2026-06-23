@@ -9,6 +9,7 @@ from sqlalchemy import ForeignKey
 if TYPE_CHECKING:
     from Models.event import Event
 
+
 class SyncMetadata(Base):
     __tablename__ = "sync_metadata"
 

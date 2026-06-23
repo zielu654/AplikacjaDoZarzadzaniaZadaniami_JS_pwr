@@ -15,7 +15,8 @@ from Services.sync_mediator import SyncMediator
 
 DB_PATH = "demo_test.db"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CREDENTIALS_PATH = os.path.join(BASE_DIR, 'Secrets', 'credentials.json')
+CREDENTIALS_PATH = os.path.join(BASE_DIR, "Secrets", "credentials.json")
+
 
 def run_demo():
     print("=" * 60)
@@ -34,7 +35,6 @@ def run_demo():
     cat_repo = SqlAlchemyCategoryRepository(session)
     ev_repo = SqlAlchemyEventRepository(session)
     cred_repo = SqlAlchemyUserCredentialsRepository(session)
-
 
     google_service = GoogleCalendarService(cred_repo, current_user_id=1, credentials_path=CREDENTIALS_PATH)
 
@@ -55,29 +55,29 @@ def run_demo():
         print(f" -> Zalogowano jako: {auth_ctrl.get_connected_account_info()}")
 
     print("\n[2] Tworzenie kategorii lokalnie...")
-    cat_work_id = cat_ctrl.create_category("Projekt PWR", "#039be5", True)
+    cat_work_id = cat_ctrl.create_category("Projekt PWR", "#d50000", True)
 
     print("\n[3] Dodawanie testowych zadań do bazy lokalnej...")
     now = datetime.now()
-    
+
     ev1_id = event_ctrl.create_new_event(
         title="Napisać demo dla użytkownika",
         description="Demo pokazujące jak działa synchronizacja (dodane lokalnie)",
         category_id=cat_work_id,
         start_datetime=now,
         end_datetime=now + timedelta(hours=1),
-        priority=True
+        priority=True,
     )
-    
+
     ev2_id = event_ctrl.create_new_event(
         title="Zadanie cykliczne - daily standup",
         description="Sprawdzamy jak działa RRULE z Google",
         category_id=cat_work_id,
         start_datetime=now + timedelta(days=1),
         end_datetime=now + timedelta(days=1, hours=1),
-        rrule="FREQ=DAILY;COUNT=3"
+        rrule="FREQ=DAILY;COUNT=3",
     )
-    
+
     print(" ✅ Zadania zapisane lokalnie w SQLite.")
 
     print("\n[4] WYWOŁANIE SYNCHRONIZACJI (Lokalna Baza -> Google Calendar)...")
@@ -96,6 +96,7 @@ def run_demo():
     print("=" * 60)
 
     session.close()
+
 
 if __name__ == "__main__":
     run_demo()

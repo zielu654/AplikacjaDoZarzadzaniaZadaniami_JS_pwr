@@ -35,14 +35,14 @@ def run_demo():
     repo_creds = SqlAlchemyUserCredentialsRepository(session)
 
     print("🔑 Łączenie z Google API... (Jeśli nie masz tokenu w demo_test.db, otworzy się przeglądarka)")
-    google_service = GoogleCalendarService(credentials_repository=repo_creds, current_user_id=1, credentials_path=creds_path)
+    google_service = GoogleCalendarService(
+        credentials_repository=repo_creds, current_user_id=1, credentials_path=creds_path
+    )
     print("✅ Połączono i zautoryzowano!\n")
 
     now = datetime.datetime.now(datetime.timezone.utc)
 
-    kategoria_praca = CategoryDTO(
-        id=1, name="Praca", color=CalendarColor.TOMATO, sync_enabled=True
-    )
+    kategoria_praca = CategoryDTO(id=1, name="Praca", color=CalendarColor.TOMATO, sync_enabled=True)
 
     event1 = EventDTO(
         id=None,
@@ -52,7 +52,7 @@ def run_demo():
         end_datetime=now + datetime.timedelta(hours=2),
         is_high_priority=True,
         is_completed=False,
-        category=kategoria_praca
+        category=kategoria_praca,
     )
 
     event2 = EventDTO(
@@ -63,7 +63,7 @@ def run_demo():
         end_datetime=now + datetime.timedelta(hours=4),
         is_high_priority=False,
         is_completed=False,
-        category=None
+        category=None,
     )
 
     event3 = EventDTO(
@@ -75,7 +75,7 @@ def run_demo():
         is_high_priority=False,
         is_completed=False,
         rrule_str="FREQ=DAILY;COUNT=3",
-        category=kategoria_praca
+        category=kategoria_praca,
     )
 
     events_to_send = [event1, event2, event3]

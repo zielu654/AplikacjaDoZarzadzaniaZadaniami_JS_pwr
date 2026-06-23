@@ -13,10 +13,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
 
     @db_error_handler
     def add(self, category_dto: CategoryDTO) -> int:
-        existing_category = self.session.query(Category).filter(
-            Category.name == category_dto.name
-        ).first()
-
+        existing_category = self.session.query(Category).filter(Category.name == category_dto.name).first()
 
         if existing_category:
             if not existing_category.is_deleted:
@@ -34,7 +31,7 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
             color=category_dto.color,
             sync_enabled=category_dto.sync_enabled,
             is_deleted=False,
-            updated_at=datetime.now()
+            updated_at=datetime.now(),
         )
 
         self.session.add(new_category)
@@ -84,11 +81,5 @@ class SqlAlchemyCategoryRepository(ICategoryRepository):
 
         return self._map_to_dto(category)
 
-
     def _map_to_dto(self, category: Category) -> CategoryDTO:
-        return CategoryDTO(
-            id=category.id,
-            name=category.name,
-            color=category.color,
-            sync_enabled=category.sync_enabled
-        )
+        return CategoryDTO(id=category.id, name=category.name, color=category.color, sync_enabled=category.sync_enabled)

@@ -4,19 +4,20 @@ from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column
 from Models.base import Base
 
+
 class CalendarColor(Enum):
     LAVENDER = ("1", "#7986cb", "Lawenda")
-    SAGE     = ("2", "#33b679", "Szałwia")
-    GRAPE    = ("3", "#8e24aa", "Winogrona")
+    SAGE = ("2", "#33b679", "Szałwia")
+    GRAPE = ("3", "#8e24aa", "Winogrona")
     FLAMINGO = ("4", "#e67c73", "Flaming")
-    BANANA   = ("5", "#f6bf26", "Banan")
-    TANGERINE= ("6", "#f4511e", "Mandarynka")
-    PEACOCK  = ("7", "#039be5", "Niebo")
+    BANANA = ("5", "#f6bf26", "Banan")
+    TANGERINE = ("6", "#f4511e", "Mandarynka")
+    PEACOCK = ("7", "#039be5", "Niebo")
     GRAPHITE = ("8", "#616161", "Grafit")
-    BLUEBERRY= ("9", "#3f51b5", "Jagoda")
-    BASIL    = ("10", "#0b8043", "Bazylia")
-    TOMATO   = ("11", "#d50000", "Pomidor")
-    DEFAULT  = (None, "#039be5", "Kolor domyślny")
+    BLUEBERRY = ("9", "#3f51b5", "Jagoda")
+    BASIL = ("10", "#0b8043", "Bazylia")
+    TOMATO = ("11", "#d50000", "Pomidor")
+    DEFAULT = (None, "#039be5", "Kolor domyślny")
 
     @property
     def id(self) -> str:
@@ -31,7 +32,7 @@ class CalendarColor(Enum):
         return self.value[2]
 
     @staticmethod
-    def color_name_to_callendarColor(color_name: str) -> 'CalendarColor':
+    def color_name_to_callendarColor(color_name: str) -> "CalendarColor":
         if not color_name:
             return CalendarColor.DEFAULT
 
@@ -44,7 +45,7 @@ class CalendarColor(Enum):
         return CalendarColor.DEFAULT
 
     @staticmethod
-    def color_hex_to_callendarColor(color_hex: str) -> 'CalendarColor':
+    def color_hex_to_callendarColor(color_hex: str) -> "CalendarColor":
         if not color_hex:
             return CalendarColor.DEFAULT
 
@@ -55,6 +56,7 @@ class CalendarColor(Enum):
                 return color
 
         return CalendarColor.DEFAULT
+
 
 class Category(Base):
     __tablename__ = "categories"
